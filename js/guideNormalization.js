@@ -1,16 +1,16 @@
 class GuideNormalization
 {
-    constructor(mainProject, framework, vertexMesh, vertexMaterial)
+    constructor(mainProject, framework)
     {
         this.mainProject = mainProject;
         this.framework = framework;
-        this.vertexMesh = vertexMesh;
-        this.vertexMaterial = vertexMaterial;
         this.vertexRadius = 0.5;
+
+        this.renderer = new RenderHelpers( this.framework, mainProject.camera );
 
         this.mousePosition = new vec2( 0, 0 );
         this.startPosition = new vec2( 0, 0 );
-        this.endPosition = new vec2( 0, 0 );
+        this.endPosition = new vec2( 1.5, 0.5 );
 
         this.dragging = false;
 
@@ -24,14 +24,12 @@ class GuideNormalization
         let w = this.framework.canvas.width / this.framework.imgui.scale;
         let h = this.framework.canvas.height / this.framework.imgui.scale;
 
-        this.framework.imgui.initWindow( "Normalization", true, new vec2(2,2), new vec2(270,45) );
         this.framework.imgui.initWindow( "FullFrame", true, new vec2(0,0), new vec2(w,h), false, false );
+        this.framework.imgui.initWindow( "Normalization", true, new vec2(2,2), new vec2(205,95) );
     }
 
     free()
     {
-        this.vertexMesh = null;
-        this.vertexMaterial = null;
     }
 
     update(deltaTime)
@@ -40,38 +38,46 @@ class GuideNormalization
 
     draw()
     {
+        let decimals = 2;
+
         // Menu.
         let imgui = this.framework.imgui;
         imgui.window( "Normalization" );
 
-        if( this.startPosition.distanceFrom( this.endPosition ) == 0 )
-        {
-            imgui.text( "Click and drag to create a vector" );
-        }
+        //if( this.startPosition.distanceFrom( this.endPosition ) == 0 )
+        //{
+        //    imgui.text( "Click and drag to create a vector" );
+        //}
 
         if( imgui.checkbox( "Show positions", this.showPositions ) )
         {
             this.showPositions = !this.showPositions;
         }
 
+        imgui.text( "Point 1:    " + this.startPosition.x.toFixed(decimals) + ", " + this.startPosition.y.toFixed(decimals) );
+        imgui.text( "Point 2:    " + this.endPosition.x.toFixed(decimals) + ", " + this.endPosition.y.toFixed(decimals) );
+        let direction = this.endPosition.minus( this.startPosition );
+        imgui.text( "Direction:  " + direction.x.toFixed(decimals) + ", " + direction.y.toFixed(decimals) );
+        imgui.text( "Magnitude:  " + direction.length().toFixed(decimals) );
+        direction.normalize();
+        imgui.text( "Normalized: " + direction.x.toFixed(decimals) + ", " + direction.y.toFixed(decimals) );
+
         //imgui.text( "Mouse: " + this.mousePosition.x + ", " + this.mousePosition.y );
 
-        // Draw the guide.
-        let vertexMesh = this.framework.resources.meshes["vertex"];
-        let edgeMesh = this.framework.resources.meshes["edge"];
+        // Colors.
         let startColor = this.framework.resources.materials["blue"];
         let endColor = this.framework.resources.materials["blue"];
         let xAxisColor = this.framework.resources.materials["red"];
         let yAxisColor = this.framework.resources.materials["green"];
         let normalizedColor = this.framework.resources.materials["white"];
 
-        let matWorld = new mat4;
+        // Grid.
+        this.renderer.drawGrid( -3, 3, 0.2 );
 
         // Text.
         {
             let p1, p2, midPos, str, x, y;
             imgui.window( "FullFrame" );
-            let decimals = 2;
 
             // X length.
             p1 = this.startPosition;
@@ -129,79 +135,21 @@ class GuideNormalization
             imgui.text( str );
         }
 
-        // X axis.
-        {
-            let p1 = this.startPosition;
-            let p2 = new vec2( this.endPosition.x, p1.y );
+        // Axes.
+        this.renderer.drawVector( this.startPosition, new vec2( this.endPosition.x, this.startPosition.y ), xAxisColor );
+        this.renderer.drawVector( new vec2( this.endPosition.x, this.startPosition.y ), this.endPosition, yAxisColor );
 
-            let midPos = p1.plus( p2 ).dividedBy( 2 );
-            let distance = p1.distanceFrom( p2 );
-            let d = p1.minus( p2 );
-            let angle = Math.atan2( d.y, d.x ) * 180.0 / Math.PI;
-
-            let pos3 = new vec3( midPos.x, midPos.y, 0 );
-            matWorld.createSRT( new vec3(distance, 1, 0), new vec3(0,0,-angle), pos3 );
-            edgeMesh.draw( this.camera, matWorld, xAxisColor );
-        }
-
-        // Y axis.
-        {
-            let p2 = this.endPosition;
-            let p1 = new vec2( p2.x, this.startPosition.y );
-
-            let midPos = p1.plus( p2 ).dividedBy( 2 );
-            let distance = p1.distanceFrom( p2 );
-            let d = p1.minus( p2 );
-            let angle = Math.atan2( d.y, d.x ) * 180.0 / Math.PI;
-
-            let pos3 = new vec3( midPos.x, midPos.y, 0 );
-            matWorld.createSRT( new vec3(distance, 1, 0), new vec3(0,0,-angle), pos3 );
-            edgeMesh.draw( this.camera, matWorld, yAxisColor );
-        }
-
-        // Hypotenuse. Edge between verts.
-        {
-            let p1 = this.startPosition;
-            let p2 = this.endPosition;
-
-            let midPos = p1.plus( p2 ).dividedBy( 2 );
-            let distance = p1.distanceFrom( p2 );
-            let d = p1.minus( p2 );
-            let angle = Math.atan2( d.y, d.x ) * 180.0 / Math.PI;
-
-            let pos3 = new vec3( midPos.x, midPos.y, 0 );
-            matWorld.createSRT( new vec3(distance, 1, 0), new vec3(0,0,-angle), pos3 );
-            edgeMesh.draw( this.camera, matWorld, endColor );
-        }
+        // Hypotenuse.
+        this.renderer.drawVector( this.startPosition, this.endPosition, endColor );
 
         // Hypotenuse normalized.
-        {
-            let p1 = this.startPosition;
-            let p2 = this.startPosition.plus( this.endPosition.minus( this.startPosition ).getNormalized() );
-
-            let midPos = p1.plus( p2 ).dividedBy( 2 );
-            let distance = p1.distanceFrom( p2 );
-            let d = p1.minus( p2 );
-            let angle = Math.atan2( d.y, d.x ) * 180.0 / Math.PI;
-
-            let pos3 = new vec3( midPos.x, midPos.y, 0 );
-            matWorld.createSRT( new vec3(distance, 1, 0), new vec3(0,0,-angle), pos3 );
-            edgeMesh.draw( this.camera, matWorld, normalizedColor );
-        }
+        this.renderer.drawVector( this.startPosition, this.startPosition.plus( this.endPosition.minus( this.startPosition ).getNormalized() ), normalizedColor );
 
         // Start vertex position.
-        {
-            let matWorld = new mat4;
-            matWorld.createSRT( new vec3(0.5), new vec3(0), new vec3( this.startPosition.x, this.startPosition.y, 0 ) );
-            vertexMesh.draw( this.camera, matWorld, startColor );
-        }
+        this.renderer.drawPoint( new vec3( this.startPosition.x, this.startPosition.y, 0 ), startColor );
 
         // End vertex position.
-        {
-            let matWorld = new mat4;
-            matWorld.createSRT( new vec3(0.5), new vec3(0), new vec3( this.endPosition.x, this.endPosition.y, 0 ) );
-            vertexMesh.draw( this.camera, matWorld, endColor );
-        }
+        this.renderer.drawPoint( new vec3( this.endPosition.x, this.endPosition.y, 0 ), endColor );
     }
 
     onMouseMove(x, y, orthoX, orthoY)
@@ -235,7 +183,7 @@ class GuideNormalization
         if( this.framework.imgui.isHoveringWindow )
             return;
 
-        if( buttonID == 0 )
+        if( buttonID == 0 && this.dragging == true )
         {
             this.endPosition.setF32( orthoX, orthoY );
             this.dragging = false;

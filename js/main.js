@@ -10,9 +10,11 @@ class MainProject
     constructor(framework)
     {
         this.framework = framework;
+        this.framework.autoRefresh = false;
+
+        this.scenes = [];
         this.currentScene = null;
-        this.guideNormalization = null;
-        this.guideAngularVelocity = null;
+        this.currentSceneKey = null;
 
         // Init imgui window positions and sizes.
         let w = this.framework.canvas.width / this.framework.imgui.scale;
@@ -23,8 +25,6 @@ class MainProject
 
     shutdown()
     {
-        this.guideNormalization.free();
-        this.guideAngularVelocity.free();
         this.currentScene = null;
 
         this.framework = null;
@@ -40,29 +40,23 @@ class MainProject
         resources.materials["green3"] = new Material( resources.shaders["uniformColor"], new color( 0.3, 0.6, 0, 1 ), null );
         resources.materials["blue"] = new Material( resources.shaders["uniformColor"], new color( 0, 0, 1, 1 ), null );
         resources.materials["white"] = new Material( resources.shaders["uniformColor"], new color( 1, 1, 1, 1 ), null );
+        resources.materials["gray"] = new Material( resources.shaders["uniformColor"], new color( 0.5, 0.5, 0.5, 1 ), null );
+        resources.materials["darkGray"] = new Material( resources.shaders["uniformColor"], new color( 0.3, 0.3, 0.3, 1 ), null );
 
         resources.meshes["vertex"] = new Mesh( this.framework.gl );
-        resources.meshes["vertex"].createCircle( 200, 0.5 );
+        resources.meshes["vertex"].createCircle( 200, 0.04 );
         resources.meshes["edge"] = new Mesh( this.framework.gl );
-        resources.meshes["edge"].createBox( new vec2( 1, 0.2 ) );
+        resources.meshes["edge"].createBox( new vec2( 1, 0.02 ) );
     
         // Create a camera.
-        this.camera = new Camera( new vec3(0, 0, -3), true, 40, this.framework.canvas.width / this.framework.canvas.height );
+        this.camera = new Camera( new vec3(0, 0, -3), true, 3, this.framework.canvas.width / this.framework.canvas.height );
 
         // Create the guides.
-        this.guideNormalization = new GuideNormalization(
-            this,
-            this.framework,
-            resources.meshes["vertex"],
-            resources.materials["white"] );
+        this.scenes["Normalization"] = new GuideNormalization( this, this.framework );
+        this.scenes["AngularVelocity"] = new GuideAngularVelocity( this, this.framework );
 
-        this.guideAngularVelocity = new GuideAngularVelocity(
-            this,
-            this.framework,
-            resources.meshes["vertex"],
-            resources.materials["blue"] );
-
-        this.currentScene = this.guideNormalization;
+        this.currentSceneKey = "Normalization";
+        this.currentScene = this.scenes[this.currentSceneKey];
 
         this.loadState();
     }
@@ -72,6 +66,9 @@ class MainProject
         if( this.framework.storage != null )
         {
             this.camera.fromJSON( this.framework.storage["cameraState"] );
+            this.currentSceneKey = this.framework.storage["currentSceneKey"];
+            if( this.scenes[this.currentSceneKey] !== undefined )
+                this.currentScene = this.scenes[this.currentSceneKey];
         }
     }
 
@@ -82,6 +79,7 @@ class MainProject
             if( this.framework.storage != null )
             {
                 this.framework.storage["cameraState"] = JSON.stringify( this.camera );
+                this.framework.storage["currentSceneKey"] = this.currentSceneKey;
             }
         }
     }
@@ -97,8 +95,14 @@ class MainProject
         let imgui = this.framework.imgui;
         imgui.window( "Guides" );
 
-        if( imgui.button( "Normalization" ) )    { this.currentScene = this.guideNormalization; }
-        if( imgui.button( "Angular Velocity" ) ) { this.currentScene = this.guideAngularVelocity; }
+        for( let key in this.scenes )
+        {
+            if( imgui.button( key ) )
+            {
+                this.currentSceneKey = key;
+                this.currentScene = this.scenes[this.currentSceneKey];
+            }
+        }
 
         this.currentScene.draw();
     }
@@ -113,6 +117,8 @@ class MainProject
         this.camera.onMouseMove( x, y );
         let [orthoX, orthoY] = this.camera.convertMouseToOrtho( this.framework.canvas, x, y );
         this.currentScene.onMouseMove( x, y, orthoX, orthoY );
+
+        this.framework.refresh();
     }
 
     onMouseDown(buttonID, x, y)
@@ -120,6 +126,8 @@ class MainProject
         this.camera.onMouseDown( buttonID, x, y );
         let [orthoX, orthoY] = this.camera.convertMouseToOrtho( this.framework.canvas, x, y );
         this.currentScene.onMouseDown( buttonID, x, y, orthoX, orthoY );
+
+        this.framework.refresh();
     }
 
     onMouseUp(buttonID, x, y)
@@ -127,24 +135,32 @@ class MainProject
         this.camera.onMouseUp( buttonID, x, y );
         let [orthoX, orthoY] = this.camera.convertMouseToOrtho( this.framework.canvas, x, y );
         this.currentScene.onMouseUp( buttonID, x, y, orthoX, orthoY );
+
+        this.framework.refresh();
     }
 
     onMouseWheel(direction)
     {
         this.camera.onMouseWheel( direction );
         this.currentScene.onMouseWheel( direction );
+
+        this.framework.refresh();
     }
 
     onKeyDown(keyCode)
     {
         if( this.currentScene.onKeyDown )
             this.currentScene.onKeyDown( keyCode );
+
+        this.framework.refresh();
     }
 
     onKeyUp(keyCode)
     {
         if( this.currentScene.onKeyUp )
             this.currentScene.onKeyUp( keyCode );
+
+        this.framework.refresh();
     }
 }
 
