@@ -15,6 +15,7 @@ class GuideNormalization
         this.dragging = false;
 
         // Settings.
+        this.step = 1;
         this.showPositions = false;
         
         // Assign the camera.
@@ -24,8 +25,9 @@ class GuideNormalization
         let w = this.framework.canvas.width / this.framework.imgui.scale;
         let h = this.framework.canvas.height / this.framework.imgui.scale;
 
-        this.framework.imgui.initWindow( "FullFrame", true, new vec2(0,0), new vec2(w,h), false, false );
-        this.framework.imgui.initWindow( "Normalization", true, new vec2(2,2), new vec2(205,95) );
+        this.framework.imgui.initWindow( "FullFrame", false, new vec2(0,0), new vec2(w,h), false, false );
+        this.framework.imgui.initWindow( "Normalization", false, new vec2(2,2), new vec2(205,110) );
+        this.framework.imgui.initWindow( "Definitions", false, new vec2(2,h-42), new vec2(600,40) );
     }
 
     free()
@@ -40,6 +42,10 @@ class GuideNormalization
     {
         let decimals = 2;
 
+        // Calculate some values.
+        let direction = this.endPosition.minus( this.startPosition );
+        let normalizedDir = direction.getNormalized();
+
         // Menu.
         let imgui = this.framework.imgui;
         imgui.window( "Normalization" );
@@ -49,20 +55,40 @@ class GuideNormalization
         //    imgui.text( "Click and drag to create a vector" );
         //}
 
+        // Add step selector.
+        this.step = this.renderer.addStepSelector( imgui, this.step, 2 );
+
         if( imgui.checkbox( "Show positions", this.showPositions ) )
         {
             this.showPositions = !this.showPositions;
         }
 
-        imgui.text( "Point 1:    " + this.startPosition.x.toFixed(decimals) + ", " + this.startPosition.y.toFixed(decimals) );
-        imgui.text( "Point 2:    " + this.endPosition.x.toFixed(decimals) + ", " + this.endPosition.y.toFixed(decimals) );
-        let direction = this.endPosition.minus( this.startPosition );
-        imgui.text( "Direction:  " + direction.x.toFixed(decimals) + ", " + direction.y.toFixed(decimals) );
-        imgui.text( "Magnitude:  " + direction.length().toFixed(decimals) );
-        direction.normalize();
-        imgui.text( "Normalized: " + direction.x.toFixed(decimals) + ", " + direction.y.toFixed(decimals) );
+        if( this.step == 1 )
+        {
+            imgui.text( "Point 1:    " + this.startPosition.x.toFixed(decimals) + ", " + this.startPosition.y.toFixed(decimals) );
+            imgui.text( "Point 2:    " + this.endPosition.x.toFixed(decimals) + ", " + this.endPosition.y.toFixed(decimals) );
+            imgui.text( "Direction:  " + direction.x.toFixed(decimals) + ", " + direction.y.toFixed(decimals) );
+            imgui.text( "Magnitude:  " + direction.length().toFixed(decimals) );
+            imgui.text( "Normalized: " + normalizedDir.x.toFixed(decimals) + ", " + normalizedDir.y.toFixed(decimals) );
 
-        //imgui.text( "Mouse: " + this.mousePosition.x + ", " + this.mousePosition.y );
+            //imgui.text( "Mouse: " + this.mousePosition.x + ", " + this.mousePosition.y );
+
+            imgui.window( "Definitions" );
+            imgui.text( "Normalized vectors are direction vectors with a magnitude of 1.");
+            imgui.text( "i.e. normalized dir vector = direction / magnitude");
+            imgui.window( "Normalization" );
+        }
+
+        if( this.step == 2 )
+        {
+            imgui.window( "Definitions" );
+            imgui.text( "Calculate distance between points with pythagoras' theorem.");
+            imgui.text( "i.e. magnitude squared = x*x + y*y");
+            imgui.window( "Normalization" );
+
+            imgui.text( "len = sqrt(x*x + y*y)");
+            imgui.text( "Magnitude:  " + direction.length().toFixed(decimals) );
+        }
 
         // Colors.
         let startColor = this.framework.resources.materials["blue"];

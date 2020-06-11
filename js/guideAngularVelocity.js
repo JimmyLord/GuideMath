@@ -1,4 +1,4 @@
-class GuideAngularVelocity
+﻿class GuideAngularVelocity
 {
     constructor(mainProject, framework)
     {
@@ -8,6 +8,27 @@ class GuideAngularVelocity
         
         this.renderer = new RenderHelpers( this.framework, mainProject.camera );
 
+        this.dragging = false;
+
+        this.mousePosition = new vec2(0);
+        this.centerPosition = new vec2(0);
+        this.startPosition = new vec2(1, 1);
+        this.endPosition = new vec2(-1, 1);
+        this.radius = 0.8;
+
+        this.currentPosition = new vec2(0);
+        this.currentPosition.set( this.startPosition );
+
+        this.step = 1;
+        this.showDegrees = false;
+
+        this.playing = false;
+        this.totalPlayTime = 2.0;
+        this.timePassed = 0.0;
+        this.startRadians = 0.0;
+        this.endRadians = 0.0;
+        this.angularVelocity = 0.0;
+
         // Assign the camera.
         this.camera = mainProject.camera;
 
@@ -15,8 +36,9 @@ class GuideAngularVelocity
         let w = this.framework.canvas.width / this.framework.imgui.scale;
         let h = this.framework.canvas.height / this.framework.imgui.scale;
 
-        this.framework.imgui.initWindow( "FullFrame", true, new vec2(0,0), new vec2(w,h), false, false );
-        this.framework.imgui.initWindow( "Angular Velocity", true, new vec2(2,2), new vec2(205,95) );
+        this.framework.imgui.initWindow( "FullFrame", false, new vec2(0,0), new vec2(w,h), false, false );
+        this.framework.imgui.initWindow( "Angular Velocity", false, new vec2(2,2), new vec2(190,127) );
+        this.framework.imgui.initWindow( "Definitions", false, new vec2(2,h-42), new vec2(600,40) );
     }
 
     free()
@@ -25,35 +47,183 @@ class GuideAngularVelocity
 
     update(deltaTime)
     {
+        if( this.playing === true )
+        {
+            this.timePassed += deltaTime;
+            let currentRadians = this.startRadians + this.angularVelocity * this.timePassed;
+
+            if( currentRadians > this.endRadians )
+            {
+                this.playing = false;
+                this.framework.autoRefresh = false;
+
+                currentRadians = this.endRadians;
+            }
+
+            this.currentPosition = new vec2( Math.cos( currentRadians ), Math.sin( currentRadians ) );
+        }
     }
 
     draw()
     {
+        let decimals = 2;
+
+        // Calculate some values.
+        let startPos = this.startPosition.minus( this.centerPosition );
+        startPos.normalize();
+        startPos.multiplyBy( this.radius );
+        let startRadians = Math.atan2( startPos.y, startPos.x );
+        if( startRadians < 0 ) startRadians += Math.PI * 2;
+
+        let endPos = this.endPosition.minus( this.centerPosition );
+        endPos.normalize();
+        endPos.multiplyBy( this.radius );
+        let endRadians = Math.atan2( endPos.y, endPos.x );
+        if( endRadians < 0 ) endRadians += Math.PI * 2;
+
+        let angleDiff = endRadians - startRadians;
+        if( angleDiff < 0 ) angleDiff += Math.PI * 2;
+
+        let currentPos = this.currentPosition.minus( this.centerPosition );
+        currentPos.normalize();
+        currentPos.multiplyBy( this.radius );
+        let currentRadians = Math.atan2( currentPos.y, currentPos.x );
+        if( currentRadians < 0 ) currentRadians += Math.PI * 2;
+
+        let angularVelocity = angleDiff / this.totalPlayTime;
+
         // Menu.
         let imgui = this.framework.imgui;
         imgui.window( "Angular Velocity" );
 
-        //if( this.startPosition.distanceFrom( this.endPosition ) == 0 )
-        //{
-        //    imgui.text( "Click and drag to create a vector" );
-        //}
+        // Add step selector.
+        this.step = this.renderer.addStepSelector( imgui, this.step, 6 );
 
-        //if( imgui.checkbox( "Show positions", this.showPositions ) )
-        //{
-        //    this.showPositions = !this.showPositions;
-        //}
+        if( imgui.checkbox( "Degrees", this.showDegrees ) )
+        {
+            this.showDegrees = !this.showDegrees;
+        }
 
-        //imgui.text( "Point 1:    " + this.startPosition.x.toFixed(decimals) + ", " + this.startPosition.y.toFixed(decimals) );
-        //imgui.text( "Point 2:    " + this.endPosition.x.toFixed(decimals) + ", " + this.endPosition.y.toFixed(decimals) );
-        //let direction = this.endPosition.minus( this.startPosition );
-        //imgui.text( "Direction:  " + direction.x.toFixed(decimals) + ", " + direction.y.toFixed(decimals) );
-        //imgui.text( "Magnitude:  " + direction.length().toFixed(decimals) );
-        //direction.normalize();
-        //imgui.text( "Normalized: " + direction.x.toFixed(decimals) + ", " + direction.y.toFixed(decimals) );
+        let multiplier = 1.0;
+        if( this.showDegrees )
+            multiplier = 180.0 / Math.PI;
+
+        if( this.step === 1 )
+        {
+            imgui.window( "Definitions" );
+            imgui.text( "Math operations require angles in radians.");
+            imgui.text( "Angles are often denoted with a theta (θ) symbol.");
+            imgui.window( "Angular Velocity" );
+
+            imgui.text( "Start angle:   " + (startRadians * multiplier).toFixed(decimals) );
+            imgui.text( "End angle:     " + (endRadians * multiplier).toFixed(decimals) );
+            imgui.text( "Delta angle:   " + (angleDiff * multiplier).toFixed(decimals) );
+
+            imgui.text( "Current angle: " + (currentRadians * multiplier).toFixed(decimals) );
+        }
+
+        if( this.step === 2 )
+        {
+            imgui.window( "Definitions" );
+            imgui.text( "Angular velocity is the change in angle over time.");
+            imgui.text( "Usually denoted with an omega (ω) symbol.");
+            imgui.window( "Angular Velocity" );
+
+            imgui.text( "Delta angle: " + (angleDiff * multiplier).toFixed(decimals) );
+            imgui.text( "Delta time:  " + (this.totalPlayTime).toFixed(decimals) );
+            imgui.text( "ω = Δangle / Δtime");
+            imgui.text( "ω = " + (angularVelocity * multiplier).toFixed(decimals) ); imgui.sameLine();
+            if( this.showDegrees )
+                imgui.text( " deg/sec" );
+            else
+                imgui.text( " rad/sec" );
+        }
+
+        if( this.step === 3 )
+        {
+            imgui.window( "Definitions" );
+            imgui.text( "The speed of the ball is related to ω.");
+            imgui.text( "The distance travelled is Δangle (in radians) times the radius.");
+            imgui.window( "Angular Velocity" );
+
+            imgui.text( "Delta angle:      " + (angleDiff * multiplier).toFixed(decimals) );
+            this.radius = imgui.dragNumber( "Radius", this.radius, 0.01, 2, 0.01, 5 );
+            imgui.text( "Displacement:     " + (angleDiff * this.radius).toFixed(decimals) );
+            imgui.text( "" );
+        }
+
+        if( this.step === 4 )
+        {
+            imgui.window( "Definitions" );
+            imgui.text( "The linear velocity is the displacement (distance travelled) over time.");
+            imgui.text( "Linear velocity = (Δangle * radius) / Δtime" );
+            imgui.window( "Angular Velocity" );
+
+            imgui.text( "Delta angle:      " + (angleDiff * multiplier).toFixed(decimals) );
+            this.radius = imgui.dragNumber( "Radius", this.radius, 0.01, 2, 0.01, 5 );
+            imgui.text( "Displacement:     " + (angleDiff * this.radius).toFixed(decimals) );
+            imgui.text( "Linear Velocity:  " + (angleDiff * this.radius / this.totalPlayTime).toFixed(decimals) );
+        }
+
+        if( this.step === 5 )
+        {
+            imgui.window( "Definitions" );
+            imgui.text( "Linear velocity = (Δangle * radius) / Δtime");
+            imgui.text( "Linear velocity = Angular velocity * radius" );
+            imgui.window( "Angular Velocity" );
+
+            imgui.text( "Linear Velocity:  " + (angleDiff * this.radius / this.totalPlayTime).toFixed(decimals) );
+            imgui.text( "Angular Velocity: " + (angularVelocity * multiplier).toFixed(decimals) );
+            this.radius = imgui.dragNumber( "Radius", this.radius, 0.01, 2, 0.01, 5 );
+            imgui.text( "" );
+        }
+
+        if( this.step === 6 )
+        {
+            imgui.window( "Definitions" );
+            imgui.text( "Linear velocity = Angular velocity * radius" );
+            imgui.text( "Angular velocity = Linear velocity / radius");
+            imgui.window( "Angular Velocity" );
+
+            imgui.text( "Linear Velocity:  " + (angleDiff * this.radius / this.totalPlayTime).toFixed(decimals) );
+            imgui.text( "Angular Velocity: " + (angularVelocity * multiplier).toFixed(decimals) );
+            this.radius = imgui.dragNumber( "Radius", this.radius, 0.01, 2, 0.01, 5 );
+            imgui.text( "" );
+        }
+
+        imgui.text( "" );
+        this.totalPlayTime = imgui.dragNumber( "Time: ", this.totalPlayTime, 0.01, 2, 0.01, 60 );
+
+        if( this.playing === false )
+        {
+            if( imgui.button( "Play" ) )
+            {
+                this.playing = true;
+                this.framework.autoRefresh = true;
+
+                this.timePassed = 0.0;
+                this.startRadians = startRadians;
+                this.endRadians = endRadians;
+                if( startRadians > endRadians )
+                    this.startRadians -= Math.PI * 2;
+                this.angularVelocity = angularVelocity;
+            }
+        }
+        else
+        {
+            if( imgui.button( "Stop" ) )
+            {
+                this.playing = false;
+                this.framework.autoRefresh = false;
+            }
+        }
 
         // Colors.
-        let lineColor = this.framework.resources.materials["white"];
-        let pointColor = this.framework.resources.materials["green"];
+        let startColor = this.framework.resources.materials["white"];
+        let endColor = this.framework.resources.materials["red"];
+        let movingColor = this.framework.resources.materials["green"];
+        let centerColor = this.framework.resources.materials["white"];
+        let circleColor = this.framework.resources.materials["lightGray"];
 
         // Grid.
         this.renderer.drawGrid( -3, 3, 0.2 );
@@ -76,33 +246,51 @@ class GuideAngularVelocity
             //imgui.text( str );
         }
 
-        let center = new vec2(0);
-        let pos = new vec2(1);
-        let dir = pos.minus( center );
-        dir.normalize();
-
         // Shapes.
-        this.renderer.drawPoint( center, pointColor );
-        //this.renderer.drawCircle( 30, center, circleColor );
-        this.renderer.drawVector( center, dir, lineColor );
+        this.renderer.drawCircle( this.radius, this.centerPosition, circleColor );
+        this.renderer.drawVector( this.centerPosition, endPos, endColor );
+        this.renderer.drawVector( this.centerPosition, startPos, startColor );
+        this.renderer.drawVector( this.centerPosition, currentPos, movingColor );
+        this.renderer.drawPoint( this.centerPosition, centerColor );
+        this.renderer.drawPoint( currentPos, movingColor );
     }
 
     onMouseMove(x, y, orthoX, orthoY)
     {
         if( this.framework.imgui.isHoveringWindow )
             return;
+
+        this.mousePosition.setF32( orthoX, orthoY );
+
+        if( this.dragging )
+        {
+            this.endPosition.set( this.mousePosition );
+        }
     }
 
     onMouseDown(buttonID, x, y, orthoX, orthoY)
     {
         if( this.framework.imgui.isHoveringWindow )
             return;
+
+        if( buttonID == 0 )
+        {
+            this.startPosition.setF32( orthoX, orthoY );
+            this.currentPosition.setF32( orthoX, orthoY );
+            this.endPosition.setF32( orthoX, orthoY );
+            this.dragging = true;
+        }
     }
 
     onMouseUp(buttonID, x, y, orthoX, orthoY)
     {
         if( this.framework.imgui.isHoveringWindow )
             return;
+
+        if( buttonID == 0 && this.dragging == true )
+        {
+            this.dragging = false;
+        }
     }
 
     onMouseWheel(direction)

@@ -20,7 +20,8 @@ class MainProject
         let w = this.framework.canvas.width / this.framework.imgui.scale;
         let h = this.framework.canvas.height / this.framework.imgui.scale;
 
-        this.framework.imgui.initWindow( "Guides", true, new vec2(w-152,2), new vec2(150,45) );
+        this.framework.imgui.initWindow( "Guides", false, new vec2(w-152,2), new vec2(150,45) );
+        this.framework.clearColor.set( 32/255.0, 32/255.0, 32/255.0, 1.0 );
     }
 
     shutdown()
@@ -34,26 +35,30 @@ class MainProject
     {
         let resources = this.framework.resources;
 
-        resources.materials["red"] = new Material( resources.shaders["uniformColor"], new color( 1, 0, 0, 1 ), null );
-        resources.materials["green"] = new Material( resources.shaders["uniformColor"], new color( 0, 1, 0, 1 ), null );
-        resources.materials["green2"] = new Material( resources.shaders["uniformColor"], new color( 0.0, 0.4, 0.2, 1 ), null );
-        resources.materials["green3"] = new Material( resources.shaders["uniformColor"], new color( 0.3, 0.6, 0, 1 ), null );
-        resources.materials["blue"] = new Material( resources.shaders["uniformColor"], new color( 0, 0, 1, 1 ), null );
-        resources.materials["white"] = new Material( resources.shaders["uniformColor"], new color( 1, 1, 1, 1 ), null );
-        resources.materials["gray"] = new Material( resources.shaders["uniformColor"], new color( 0.5, 0.5, 0.5, 1 ), null );
-        resources.materials["darkGray"] = new Material( resources.shaders["uniformColor"], new color( 0.3, 0.3, 0.3, 1 ), null );
+        resources.materials["red"] =        new Material( resources.shaders["uniformColor"], new color( 1   , 0   , 0   , 1 ), null );
+        resources.materials["green"] =      new Material( resources.shaders["uniformColor"], new color( 0   , 1   , 0   , 1 ), null );
+        resources.materials["green2"] =     new Material( resources.shaders["uniformColor"], new color( 0   , 0.4 , 0.2 , 1 ), null );
+        resources.materials["green3"] =     new Material( resources.shaders["uniformColor"], new color( 0.3 , 0.6 , 0   , 1 ), null );
+        resources.materials["blue"] =       new Material( resources.shaders["uniformColor"], new color( 0   , 0   , 1   , 1 ), null );
+        resources.materials["white"] =      new Material( resources.shaders["uniformColor"], new color( 1   , 1   , 1   , 1 ), null );
+        resources.materials["lightGray"] =  new Material( resources.shaders["uniformColor"], new color( 0.7 , 0.7 , 0.7 , 1 ), null );
+        resources.materials["gray"] =       new Material( resources.shaders["uniformColor"], new color( 0.5 , 0.5 , 0.5 , 1 ), null );
+        resources.materials["darkGray"] =   new Material( resources.shaders["uniformColor"], new color( 0.35, 0.35, 0.35, 1 ), null );
+        resources.materials["VDarkGray"] =  new Material( resources.shaders["uniformColor"], new color( 0.2 , 0.2 , 0.2 , 1 ), null );
 
         resources.meshes["vertex"] = new Mesh( this.framework.gl );
         resources.meshes["vertex"].createCircle( 200, 0.04 );
         resources.meshes["edge"] = new Mesh( this.framework.gl );
         resources.meshes["edge"].createBox( new vec2( 1, 0.02 ) );
+        resources.meshes["circle"] = new Mesh( this.framework.gl );
+        resources.meshes["circle"].createCircle( 200, 1.0, true );
     
         // Create a camera.
         this.camera = new Camera( new vec3(0, 0, -3), true, 3, this.framework.canvas.width / this.framework.canvas.height );
 
         // Create the guides.
         this.scenes["Normalization"] = new GuideNormalization( this, this.framework );
-        this.scenes["AngularVelocity"] = new GuideAngularVelocity( this, this.framework );
+        this.scenes["Angular Velocity"] = new GuideAngularVelocity( this, this.framework );
 
         this.currentSceneKey = "Normalization";
         this.currentScene = this.scenes[this.currentSceneKey];

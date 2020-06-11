@@ -6,15 +6,43 @@ class RenderHelpers
         this.camera = camera;
     }
 
+    addStepSelector(imgui, step, maxStep)
+    {
+        imgui.activeWindow.cursor.x = 46;
+        if( step == 1 )
+        {
+            imgui.activeWindow.cursor.x = 60;
+        }
+        else
+        {
+            if( imgui.button( "<" ) )
+            {
+                step--;
+            }
+            imgui.sameLine();
+        }
+        imgui.text( " Step " + step + " " );
+        if( step < maxStep )
+        {
+            imgui.sameLine();
+            if( imgui.button( ">" ) )
+            {
+                step++;
+            }
+        }
+
+        return step;
+    }
+
     drawGrid(min, max, increment)
     {
         let matWorld = new mat4;
 
-        let edgeMesh = this.framework.resources.meshes["edge"];
+        let mesh = this.framework.resources.meshes["edge"];
 
-        let gridCenterAxisColor = this.framework.resources.materials["white"];
-        let gridMajorAxisColor = this.framework.resources.materials["gray"];
-        let gridMinorAxisColor = this.framework.resources.materials["darkGray"];
+        let gridCenterAxisColor = this.framework.resources.materials["gray"];
+        let gridMajorAxisColor = this.framework.resources.materials["darkGray"];
+        let gridMinorAxisColor = this.framework.resources.materials["VDarkGray"];
 
         let size = max - min;
 
@@ -23,20 +51,20 @@ class RenderHelpers
             // Horizontal lines.
             matWorld.createSRT( new vec3(size, 0.2, 0), new vec3(0,0,0), new vec3(0, i, 0) );
             if( Math.abs(i) < 0.1 )
-                edgeMesh.draw( this.camera, matWorld, gridCenterAxisColor );
+                mesh.draw( this.camera, matWorld, gridCenterAxisColor );
             else if( Math.abs(i - Math.round(i)) < 0.1 )
-                edgeMesh.draw( this.camera, matWorld, gridMajorAxisColor );
+                mesh.draw( this.camera, matWorld, gridMajorAxisColor );
             else
-                edgeMesh.draw( this.camera, matWorld, gridMinorAxisColor );
+                mesh.draw( this.camera, matWorld, gridMinorAxisColor );
 
             // Vertical lines.
             matWorld.createSRT( new vec3(size, 0.2, 0), new vec3(0,0,90), new vec3(i, 0, 0) );
             if( Math.abs(i) < 0.1 )
-                edgeMesh.draw( this.camera, matWorld, gridCenterAxisColor );
+                mesh.draw( this.camera, matWorld, gridCenterAxisColor );
             else if( Math.abs(i - Math.round(i)) < 0.1 )
-                edgeMesh.draw( this.camera, matWorld, gridMajorAxisColor );
+                mesh.draw( this.camera, matWorld, gridMajorAxisColor );
             else
-                edgeMesh.draw( this.camera, matWorld, gridMinorAxisColor );
+                mesh.draw( this.camera, matWorld, gridMinorAxisColor );
         }
     }
 
@@ -44,17 +72,17 @@ class RenderHelpers
     {
         let matWorld = new mat4;
 
-        let vertexMesh = this.framework.resources.meshes["vertex"];
+        let mesh = this.framework.resources.meshes["vertex"];
 
         matWorld.createSRT( new vec3(1), new vec3(0), new vec3(pos.x, pos.y, 0) );
-        vertexMesh.draw( this.camera, matWorld, color );
+        mesh.draw( this.camera, matWorld, color );
     }
 
     drawVector(p1, p2, color)
     {
         let matWorld = new mat4;
 
-        let edgeMesh = this.framework.resources.meshes["edge"];
+        let mesh = this.framework.resources.meshes["edge"];
 
         let midPos = p1.plus( p2 ).dividedBy( 2 );
         let distance = p1.distanceFrom( p2 );
@@ -63,6 +91,15 @@ class RenderHelpers
 
         let pos3 = new vec3( midPos.x, midPos.y, 0 );
         matWorld.createSRT( new vec3(distance, 1, 0), new vec3(0,0,-angle), pos3 );
-        edgeMesh.draw( this.camera, matWorld, color );
+        mesh.draw( this.camera, matWorld, color );
+    }
+
+    drawCircle(scale, center, color)
+    {
+        let matWorld = new mat4;
+        let mesh = this.framework.resources.meshes["circle"];
+
+        matWorld.createSRT( new vec3(scale), new vec3(0), new vec3(center.x, center.y, 0) );
+        mesh.draw( this.camera, matWorld, color );
     }
 }
