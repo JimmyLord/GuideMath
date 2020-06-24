@@ -62,9 +62,6 @@ class MainProject
         resources.meshes["circle"] = new Mesh( this.framework.gl );
         resources.meshes["circle"].createCircle( 200, 1.0, true );
     
-        // Create a camera.
-        this.camera = new Camera( new vec3(0, 0, -3), true, 3, this.framework.canvas.width / this.framework.canvas.height );
-
         // Create the guides.
         this.scenes["Normalization"] = new GuideNormalization( this, this.framework );
         this.scenes["Angular Velocity"] = new GuideAngularVelocity( this, this.framework );
@@ -80,7 +77,7 @@ class MainProject
     {
         if( this.framework.storage != null )
         {
-            this.camera.fromJSON( this.framework.storage["cameraState"] );
+            //this.camera.fromJSON( this.framework.storage["cameraState"] );
             this.currentSceneKey = this.framework.storage["currentSceneKey"];
             if( this.scenes[this.currentSceneKey] !== undefined )
                 this.currentScene = this.scenes[this.currentSceneKey];
@@ -89,13 +86,11 @@ class MainProject
 
     saveState()
     {
-        if( this.camera )
+        if( this.framework.storage != null )
         {
-            if( this.framework.storage != null )
-            {
-                this.framework.storage["cameraState"] = JSON.stringify( this.camera );
-                this.framework.storage["currentSceneKey"] = this.currentSceneKey;
-            }
+            //if( this.camera )
+                //this.framework.storage["cameraState"] = JSON.stringify( this.camera );
+            this.framework.storage["currentSceneKey"] = this.currentSceneKey;
         }
     }
 
@@ -157,7 +152,6 @@ class MainProject
             }
         }
 
-        this.camera.update();
         this.currentScene.update( deltaTime )
     }
 
@@ -173,34 +167,27 @@ class MainProject
 
     onMouseMove(x, y)
     {
-        this.camera.onMouseMove( x, y );
-        let [orthoX, orthoY] = this.camera.convertMouseToOrtho( this.framework.canvas, x, y );
-        this.currentScene.onMouseMove( x, y, orthoX, orthoY );
+        this.currentScene.onMouseMove( x, y );
 
         this.framework.refresh();
     }
 
     onMouseDown(buttonID, x, y)
     {
-        this.camera.onMouseDown( buttonID, x, y );
-        let [orthoX, orthoY] = this.camera.convertMouseToOrtho( this.framework.canvas, x, y );
-        this.currentScene.onMouseDown( buttonID, x, y, orthoX, orthoY );
+        this.currentScene.onMouseDown( buttonID, x, y );
 
         this.framework.refresh();
     }
 
     onMouseUp(buttonID, x, y)
     {
-        this.camera.onMouseUp( buttonID, x, y );
-        let [orthoX, orthoY] = this.camera.convertMouseToOrtho( this.framework.canvas, x, y );
-        this.currentScene.onMouseUp( buttonID, x, y, orthoX, orthoY );
+        this.currentScene.onMouseUp( buttonID, x, y );
 
         this.framework.refresh();
     }
 
     onMouseWheel(direction)
     {
-        this.camera.onMouseWheel( direction );
         this.currentScene.onMouseWheel( direction );
 
         this.framework.refresh();

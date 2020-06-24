@@ -1,12 +1,10 @@
-class GuideNormalization
+class GuideNormalization extends Guide
 {
     constructor(mainProject, framework)
     {
-        this.mainProject = mainProject;
-        this.framework = framework;
-        this.vertexRadius = 0.5;
+        super( mainProject, framework );
 
-        this.renderer = new RenderHelpers( this.framework, mainProject.camera );
+        this.vertexRadius = 0.5;
 
         this.mousePosition = new vec2( 0, 0 );
         this.startPosition = new vec2( 0, 0 );
@@ -18,9 +16,6 @@ class GuideNormalization
         this.page = 1;
         this.showPositions = false;
         
-        // Assign the camera.
-        this.camera = mainProject.camera;
-
         // Init imgui window positions and sizes.
         this.initWindows( false );
     }
@@ -41,6 +36,7 @@ class GuideNormalization
 
     update(deltaTime)
     {
+        super.update( deltaTime );
     }
 
     draw()
@@ -186,8 +182,10 @@ class GuideNormalization
         this.renderer.drawPoint( new vec3( this.endPosition.x, this.endPosition.y, 0 ), endColor );
     }
 
-    onMouseMove(x, y, orthoX, orthoY)
+    onMouseMove(x, y)
     {
+        let [orthoX, orthoY] = super.onMouseMove( x, y );
+
         if( this.framework.imgui.isHoveringWindow )
             return;
 
@@ -199,8 +197,10 @@ class GuideNormalization
         }
     }
 
-    onMouseDown(buttonID, x, y, orthoX, orthoY)
+    onMouseDown(buttonID, x, y)
     {
+        let [orthoX, orthoY] = super.onMouseDown( buttonID, x, y );
+
         if( this.framework.imgui.isHoveringWindow )
             return;
 
@@ -212,8 +212,10 @@ class GuideNormalization
         }
     }
 
-    onMouseUp(buttonID, x, y, orthoX, orthoY)
+    onMouseUp(buttonID, x, y)
     {
+        let [orthoX, orthoY] = super.onMouseUp( buttonID, x, y );
+
         if( this.framework.imgui.isHoveringWindow )
             return;
 
@@ -222,13 +224,5 @@ class GuideNormalization
             this.endPosition.setF32( orthoX, orthoY );
             this.dragging = false;
         }
-    }
-
-    onMouseWheel(direction)
-    {
-    }
-
-    onKeyDown(keyCode)
-    {
     }
 }

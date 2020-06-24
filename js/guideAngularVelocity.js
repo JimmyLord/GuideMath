@@ -1,13 +1,11 @@
-﻿class GuideAngularVelocity
+﻿class GuideAngularVelocity extends Guide
 {
     constructor(mainProject, framework)
     {
-        this.mainProject = mainProject;
-        this.framework = framework;
+        super( mainProject, framework );
+
         this.vertexRadius = 0.5;
         
-        this.renderer = new RenderHelpers( this.framework, mainProject.camera );
-
         this.dragging = false;
 
         this.mousePosition = new vec2(0);
@@ -29,9 +27,6 @@
         this.endRadians = 0.0;
         this.angularVelocity = 0.0;
 
-        // Assign the camera.
-        this.camera = mainProject.camera;
-
         // Init imgui window positions and sizes.
         this.initWindows( false );
     }
@@ -52,6 +47,8 @@
 
     update(deltaTime)
     {
+        super.update( deltaTime );
+
         if( this.playing === true )
         {
             this.timePassed += deltaTime;
@@ -263,8 +260,10 @@
         this.renderer.drawPoint( currentPos, movingColor );
     }
 
-    onMouseMove(x, y, orthoX, orthoY)
+    onMouseMove(x, y)
     {
+        let [orthoX, orthoY] = super.onMouseMove( x, y );
+
         if( this.framework.imgui.isHoveringWindow )
             return;
 
@@ -276,8 +275,10 @@
         }
     }
 
-    onMouseDown(buttonID, x, y, orthoX, orthoY)
+    onMouseDown(buttonID, x, y)
     {
+        let [orthoX, orthoY] = super.onMouseDown( buttonID, x, y );
+
         if( this.framework.imgui.isHoveringWindow )
             return;
 
@@ -290,8 +291,10 @@
         }
     }
 
-    onMouseUp(buttonID, x, y, orthoX, orthoY)
+    onMouseUp(buttonID, x, y)
     {
+        let [orthoX, orthoY] = super.onMouseUp( buttonID, x, y );
+
         if( this.framework.imgui.isHoveringWindow )
             return;
 
@@ -299,13 +302,5 @@
         {
             this.dragging = false;
         }
-    }
-
-    onMouseWheel(direction)
-    {
-    }
-
-    onKeyDown(keyCode)
-    {
     }
 }
