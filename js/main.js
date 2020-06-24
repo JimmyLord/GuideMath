@@ -16,12 +16,21 @@ class MainProject
         this.currentScene = null;
         this.currentSceneKey = null;
 
+        // Settings.
+        this.showGrid = true;
+
         // Init imgui window positions and sizes.
+        this.initWindows( false );
+
+        this.framework.clearColor.set( 32/255.0, 32/255.0, 32/255.0, 1.0 );
+    }
+
+    initWindows(force)
+    {
         let w = this.framework.canvas.width / this.framework.imgui.scale;
         let h = this.framework.canvas.height / this.framework.imgui.scale;
 
-        this.framework.imgui.initWindow( "Guides", false, new vec2(w-152,2), new vec2(150,45) );
-        this.framework.clearColor.set( 32/255.0, 32/255.0, 32/255.0, 1.0 );
+        //this.framework.imgui.initWindow( "Guides", !force, new vec2(w-152,12), new vec2(150,45) );
     }
 
     shutdown()
@@ -59,6 +68,7 @@ class MainProject
         // Create the guides.
         this.scenes["Normalization"] = new GuideNormalization( this, this.framework );
         this.scenes["Angular Velocity"] = new GuideAngularVelocity( this, this.framework );
+        this.scenes["Acceleration"] = new GuideAcceleration( this, this.framework );
 
         this.currentSceneKey = "Normalization";
         this.currentScene = this.scenes[this.currentSceneKey];
@@ -91,24 +101,68 @@ class MainProject
 
     update(deltaTime, currentTime)
     {
+        let imgui = this.framework.imgui;
+
+        // Add main menu bar.
+        imgui.mainMenuBar();
+        if( imgui.menu( "Guides" ) )
+        {
+            for( let key in this.scenes )
+            {
+                if( imgui.menuItem( key ) )
+                {
+                    this.currentSceneKey = key;
+                    this.currentScene = this.scenes[this.currentSceneKey];
+
+                    imgui.closePopup();
+                    this.framework.refresh();
+                }
+            }
+        }
+        if( imgui.menu( "Settings" ) )
+        {
+            if( imgui.menuItem( "Reset Layout" ) )
+            {
+                this.initWindows( true );
+                this.currentScene.initWindows( true );
+                imgui.closePopup();
+                this.framework.refresh();
+            }
+            if( imgui.menuItem( "UI Scale: 1" ) )
+            {
+                imgui.scale = 1;
+                imgui.closePopup();
+                this.framework.refresh();
+            }
+            if( imgui.menuItem( "UI Scale: 2" ) )
+            {
+                imgui.scale = 2;
+                imgui.closePopup();
+                this.framework.refresh();
+            }
+            if( imgui.menuItem( "UI Scale: 3" ) )
+            {
+                imgui.scale = 3;
+                imgui.closePopup();
+                this.framework.refresh();
+            }
+        }
+        if( imgui.menu( "Grid" ) )
+        {
+            if( imgui.menuItem( "Show grid" ) )
+            {
+                this.showGrid = !this.showGrid;
+                imgui.closePopup();
+                this.framework.refresh();
+            }
+        }
+
         this.camera.update();
         this.currentScene.update( deltaTime )
     }
 
     draw()
     {
-        let imgui = this.framework.imgui;
-        imgui.window( "Guides" );
-
-        for( let key in this.scenes )
-        {
-            if( imgui.button( key ) )
-            {
-                this.currentSceneKey = key;
-                this.currentScene = this.scenes[this.currentSceneKey];
-            }
-        }
-
         this.currentScene.draw();
     }
 

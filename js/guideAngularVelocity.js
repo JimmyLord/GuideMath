@@ -19,7 +19,7 @@
         this.currentPosition = new vec2(0);
         this.currentPosition.set( this.startPosition );
 
-        this.step = 1;
+        this.page = 1;
         this.showDegrees = false;
 
         this.playing = false;
@@ -33,12 +33,17 @@
         this.camera = mainProject.camera;
 
         // Init imgui window positions and sizes.
+        this.initWindows( false );
+    }
+
+    initWindows(force)
+    {
         let w = this.framework.canvas.width / this.framework.imgui.scale;
         let h = this.framework.canvas.height / this.framework.imgui.scale;
 
-        this.framework.imgui.initWindow( "FullFrame", false, new vec2(0,0), new vec2(w,h), false, false );
-        this.framework.imgui.initWindow( "Angular Velocity", false, new vec2(2,2), new vec2(190,127) );
-        this.framework.imgui.initWindow( "Definitions", false, new vec2(2,h-42), new vec2(600,40) );
+        this.framework.imgui.initWindow( "FullFrame", !force, new vec2(0,0), new vec2(w,h), false, false );
+        this.framework.imgui.initWindow( "Definitions", !force, new vec2(2,12), new vec2(600,40) );
+        this.framework.imgui.initWindow( "Angular Velocity", !force, new vec2(2,55), new vec2(190,127) );
     }
 
     free()
@@ -96,8 +101,8 @@
         let imgui = this.framework.imgui;
         imgui.window( "Angular Velocity" );
 
-        // Add step selector.
-        this.step = this.renderer.addStepSelector( imgui, this.step, 6 );
+        // Add page selector.
+        this.page = this.renderer.addPageSelector( this.framework, this.page, 6 );
 
         if( imgui.checkbox( "Degrees", this.showDegrees ) )
         {
@@ -108,7 +113,7 @@
         if( this.showDegrees )
             multiplier = 180.0 / Math.PI;
 
-        if( this.step === 1 )
+        if( this.page === 1 )
         {
             imgui.window( "Definitions" );
             imgui.text( "Math operations require angles in radians.");
@@ -122,7 +127,7 @@
             imgui.text( "Current angle: " + (currentRadians * multiplier).toFixed(decimals) );
         }
 
-        if( this.step === 2 )
+        if( this.page === 2 )
         {
             imgui.window( "Definitions" );
             imgui.text( "Angular velocity is the change in angle over time.");
@@ -139,7 +144,7 @@
                 imgui.text( " rad/sec" );
         }
 
-        if( this.step === 3 )
+        if( this.page === 3 )
         {
             imgui.window( "Definitions" );
             imgui.text( "The speed of the ball is related to ω.");
@@ -147,12 +152,12 @@
             imgui.window( "Angular Velocity" );
 
             imgui.text( "Delta angle:      " + (angleDiff * multiplier).toFixed(decimals) );
-            this.radius = imgui.dragNumber( "Radius", this.radius, 0.01, 2, 0.01, 5 );
+            [this.radius] = imgui.dragNumber( "Radius", this.radius, 0.01, 2, 0.01, 5 );
             imgui.text( "Displacement:     " + (angleDiff * this.radius).toFixed(decimals) );
             imgui.text( "" );
         }
 
-        if( this.step === 4 )
+        if( this.page === 4 )
         {
             imgui.window( "Definitions" );
             imgui.text( "The linear velocity is the displacement (distance travelled) over time.");
@@ -160,12 +165,12 @@
             imgui.window( "Angular Velocity" );
 
             imgui.text( "Delta angle:      " + (angleDiff * multiplier).toFixed(decimals) );
-            this.radius = imgui.dragNumber( "Radius", this.radius, 0.01, 2, 0.01, 5 );
+            [this.radius] = imgui.dragNumber( "Radius", this.radius, 0.01, 2, 0.01, 5 );
             imgui.text( "Displacement:     " + (angleDiff * this.radius).toFixed(decimals) );
             imgui.text( "Linear Velocity:  " + (angleDiff * this.radius / this.totalPlayTime).toFixed(decimals) );
         }
 
-        if( this.step === 5 )
+        if( this.page === 5 )
         {
             imgui.window( "Definitions" );
             imgui.text( "Linear velocity = (Δangle * radius) / Δtime");
@@ -174,11 +179,11 @@
 
             imgui.text( "Linear Velocity:  " + (angleDiff * this.radius / this.totalPlayTime).toFixed(decimals) );
             imgui.text( "Angular Velocity: " + (angularVelocity * multiplier).toFixed(decimals) );
-            this.radius = imgui.dragNumber( "Radius", this.radius, 0.01, 2, 0.01, 5 );
+            [this.radius] = imgui.dragNumber( "Radius", this.radius, 0.01, 2, 0.01, 5 );
             imgui.text( "" );
         }
 
-        if( this.step === 6 )
+        if( this.page === 6 )
         {
             imgui.window( "Definitions" );
             imgui.text( "Linear velocity = Angular velocity * radius" );
@@ -187,12 +192,12 @@
 
             imgui.text( "Linear Velocity:  " + (angleDiff * this.radius / this.totalPlayTime).toFixed(decimals) );
             imgui.text( "Angular Velocity: " + (angularVelocity * multiplier).toFixed(decimals) );
-            this.radius = imgui.dragNumber( "Radius", this.radius, 0.01, 2, 0.01, 5 );
+            [this.radius] = imgui.dragNumber( "Radius", this.radius, 0.01, 2, 0.01, 5 );
             imgui.text( "" );
         }
 
         imgui.text( "" );
-        this.totalPlayTime = imgui.dragNumber( "Time: ", this.totalPlayTime, 0.01, 2, 0.01, 60 );
+        [this.totalPlayTime] = imgui.dragNumber( "Time: ", this.totalPlayTime, 0.01, 2, 0.01, 60 );
 
         if( this.playing === false )
         {
@@ -226,7 +231,10 @@
         let circleColor = this.framework.resources.materials["lightGray"];
 
         // Grid.
-        this.renderer.drawGrid( -3, 3, 0.2 );
+        if( this.mainProject.showGrid )
+        {
+            this.renderer.drawGrid( -3, 3, 0.2 );
+        }
 
         // Text.
         {

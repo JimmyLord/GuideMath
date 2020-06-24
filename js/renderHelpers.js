@@ -1,3 +1,17 @@
+const align =
+{
+    x: {
+        left: 0,
+        center: -0.5,
+        right: -1.0,
+    },
+    y: {
+        top: 0,
+        center: -0.5,
+        bottom: -1.0,
+    },
+};
+
 class RenderHelpers
 {
     constructor(framework, camera)
@@ -6,32 +20,55 @@ class RenderHelpers
         this.camera = camera;
     }
 
-    addStepSelector(imgui, step, maxStep)
+    addPageSelector(framework, page, maxPage)
     {
-        imgui.activeWindow.cursor.x = 46;
-        if( step == 1 )
+        let imgui = framework.imgui;
+
+        if( page < 1 )
+            page = 1;
+
+        imgui.activeWindow.cursor.x = imgui.activeWindow.position.x + 46;
+        if( page == 1 )
         {
-            imgui.activeWindow.cursor.x = 60;
+            imgui.activeWindow.cursor.x = imgui.activeWindow.position.x + 60;
         }
         else
         {
             if( imgui.button( "<" ) )
             {
-                step--;
+                page--;
+                this.framework.refresh();
             }
             imgui.sameLine();
         }
-        imgui.text( " Step " + step + " " );
-        if( step < maxStep )
+        imgui.text( " Page " + page + " " );
+        if( page < maxPage )
         {
             imgui.sameLine();
             if( imgui.button( ">" ) )
             {
-                step++;
+                this.framework.refresh();
+                page++;
             }
         }
 
-        return step;
+        return page;
+    }
+
+    drawString(str, x, y, alignX, alignY)
+    {
+        let imgui = this.framework.imgui;
+
+        let strW = str.length * 8;
+        let strH = 14;
+
+        [x,y] = this.camera.convertOrthoToScreen( this.framework.canvas, x, y );
+        imgui.activeWindow.cursor.setF32( x, y );
+        imgui.activeWindow.cursor.divideBy( this.framework.imgui.scale );
+        imgui.activeWindow.cursor.x += alignX * strW;
+        imgui.activeWindow.cursor.y += alignY * strH;
+
+        imgui.text( str );
     }
 
     drawGrid(min, max, increment)
@@ -66,6 +103,14 @@ class RenderHelpers
             else
                 mesh.draw( this.camera, matWorld, gridMinorAxisColor );
         }
+    }
+
+    drawMesh(mesh, pos, color)
+    {
+        let matWorld = new mat4;
+
+        matWorld.createSRT( new vec3(1), new vec3(0), new vec3(pos.x, pos.y, 0) );
+        mesh.draw( this.camera, matWorld, color );
     }
 
     drawPoint(pos, color)

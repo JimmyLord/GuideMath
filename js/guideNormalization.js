@@ -15,19 +15,24 @@ class GuideNormalization
         this.dragging = false;
 
         // Settings.
-        this.step = 1;
+        this.page = 1;
         this.showPositions = false;
         
         // Assign the camera.
         this.camera = mainProject.camera;
 
         // Init imgui window positions and sizes.
+        this.initWindows( false );
+    }
+
+    initWindows(force)
+    {
         let w = this.framework.canvas.width / this.framework.imgui.scale;
         let h = this.framework.canvas.height / this.framework.imgui.scale;
 
-        this.framework.imgui.initWindow( "FullFrame", false, new vec2(0,0), new vec2(w,h), false, false );
-        this.framework.imgui.initWindow( "Normalization", false, new vec2(2,2), new vec2(205,110) );
-        this.framework.imgui.initWindow( "Definitions", false, new vec2(2,h-42), new vec2(600,40) );
+        this.framework.imgui.initWindow( "FullFrame", !force, new vec2(0,0), new vec2(w,h), false, false );
+        this.framework.imgui.initWindow( "Definitions", !force, new vec2(2,12), new vec2(600,40) );
+        this.framework.imgui.initWindow( "Normalization", !force, new vec2(2,55), new vec2(205,110) );
     }
 
     free()
@@ -55,15 +60,15 @@ class GuideNormalization
         //    imgui.text( "Click and drag to create a vector" );
         //}
 
-        // Add step selector.
-        this.step = this.renderer.addStepSelector( imgui, this.step, 2 );
+        // Add page selector.
+        this.page = this.renderer.addPageSelector( this.framework, this.page, 2 );
 
         if( imgui.checkbox( "Show positions", this.showPositions ) )
         {
             this.showPositions = !this.showPositions;
         }
 
-        if( this.step == 1 )
+        if( this.page == 1 )
         {
             imgui.text( "Point 1:    " + this.startPosition.x.toFixed(decimals) + ", " + this.startPosition.y.toFixed(decimals) );
             imgui.text( "Point 2:    " + this.endPosition.x.toFixed(decimals) + ", " + this.endPosition.y.toFixed(decimals) );
@@ -79,7 +84,7 @@ class GuideNormalization
             imgui.window( "Normalization" );
         }
 
-        if( this.step == 2 )
+        if( this.page == 2 )
         {
             imgui.window( "Definitions" );
             imgui.text( "Calculate distance between points with pythagoras' theorem.");
@@ -98,7 +103,10 @@ class GuideNormalization
         let normalizedColor = this.framework.resources.materials["white"];
 
         // Grid.
-        this.renderer.drawGrid( -3, 3, 0.2 );
+        if( this.mainProject.showGrid )
+        {
+            this.renderer.drawGrid( -3, 3, 0.2 );
+        }
 
         // Text.
         {
