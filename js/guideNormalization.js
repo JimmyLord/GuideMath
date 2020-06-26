@@ -4,10 +4,9 @@ class GuideNormalization extends Guide
     {
         super( mainProject, framework );
 
-        this.vertexRadius = 0.5;
-
-        this.startPosition = new vec2( 0, 0 );
-        this.endPosition = new vec2( 1.5, 0.5 );
+        this.vertexOrigin = new vec2( 0, 0 );
+        this.vertex1 = new vec2( 1.5, 0.5 );
+        this.vertexMoving = null;
 
         this.dragging = false;
 
@@ -21,6 +20,8 @@ class GuideNormalization extends Guide
 
     initWindows(force)
     {
+        super.initWindows( force );
+
         let w = this.framework.canvas.width / this.framework.imgui.scale;
         let h = this.framework.canvas.height / this.framework.imgui.scale;
 
@@ -43,14 +44,14 @@ class GuideNormalization extends Guide
         let decimals = 2;
 
         // Calculate some values.
-        let direction = this.endPosition.minus( this.startPosition );
+        let direction = this.vertex1.minus( this.vertexOrigin );
         let normalizedDir = direction.getNormalized();
 
         // Menu.
         let imgui = this.framework.imgui;
         imgui.window( "Normalization" );
 
-        //if( this.startPosition.distanceFrom( this.endPosition ) == 0 )
+        //if( this.vertexOrigin.distanceFrom( this.vertex1 ) == 0 )
         //{
         //    imgui.text( "Click and drag to create a vector" );
         //}
@@ -65,8 +66,8 @@ class GuideNormalization extends Guide
 
         if( this.page == 1 )
         {
-            imgui.text( "Point 1:    " + this.startPosition.x.toFixed(decimals) + ", " + this.startPosition.y.toFixed(decimals) );
-            imgui.text( "Point 2:    " + this.endPosition.x.toFixed(decimals) + ", " + this.endPosition.y.toFixed(decimals) );
+            imgui.text( "Origin:     " + this.vertexOrigin.x.toFixed(decimals) + ", " + this.vertexOrigin.y.toFixed(decimals) );
+            imgui.text( "Point:      " + this.vertex1.x.toFixed(decimals) + ", " + this.vertex1.y.toFixed(decimals) );
             imgui.text( "Direction:  " + direction.x.toFixed(decimals) + ", " + direction.y.toFixed(decimals) );
             imgui.text( "Magnitude:  " + direction.length().toFixed(decimals) );
             imgui.text( "Normalized: " + normalizedDir.x.toFixed(decimals) + ", " + normalizedDir.y.toFixed(decimals) );
@@ -109,12 +110,12 @@ class GuideNormalization extends Guide
             imgui.window( "FullFrame" );
 
             // X length.
-            p1 = this.startPosition;
-            p2 = new vec2( this.endPosition.x, p1.y );
+            p1 = this.vertexOrigin;
+            p2 = new vec2( this.vertex1.x, p1.y );
             midPos = p1.plus( p2 ).dividedBy( 2 );
             str = "" + p1.minus( p2 ).length().toFixed(decimals);
             [x,y] = this.camera.convertWorldToScreen( this.framework.canvas, midPos.x, midPos.y );
-            if( this.startPosition.y < this.endPosition.y )
+            if( this.vertexOrigin.y < this.vertex1.y )
                 imgui.activeWindow.cursor.setF32( x / this.framework.imgui.scale - str.length * 8 / 2, y / this.framework.imgui.scale );
             else
                 imgui.activeWindow.cursor.setF32( x / this.framework.imgui.scale - str.length * 8 / 2, y / this.framework.imgui.scale - 12 );
@@ -122,8 +123,8 @@ class GuideNormalization extends Guide
 
             if( this.showPositions )
             {
-                str = "" + this.startPosition.x.toFixed(decimals) + "," + this.startPosition.y.toFixed(decimals);
-                [x,y] = this.camera.convertWorldToScreen( this.framework.canvas, this.startPosition.x, this.startPosition.y );
+                str = "" + this.vertexOrigin.x.toFixed(decimals) + "," + this.vertexOrigin.y.toFixed(decimals);
+                [x,y] = this.camera.convertWorldToScreen( this.framework.canvas, this.vertexOrigin.x, this.vertexOrigin.y );
                 if( p1.x < p2.x )
                     imgui.activeWindow.cursor.setF32( x / this.framework.imgui.scale - str.length * 8, y / this.framework.imgui.scale );
                 else
@@ -132,12 +133,12 @@ class GuideNormalization extends Guide
             }
 
             // Y length.
-            p2 = this.endPosition;
-            p1 = new vec2( p2.x, this.startPosition.y );
+            p2 = this.vertex1;
+            p1 = new vec2( p2.x, this.vertexOrigin.y );
             midPos = p1.plus( p2 ).dividedBy( 2 );
             str = "" + p1.minus( p2 ).length().toFixed(decimals);
             [x,y] = this.camera.convertWorldToScreen( this.framework.canvas, midPos.x, midPos.y );
-            if( this.startPosition.x < this.endPosition.x )
+            if( this.vertexOrigin.x < this.vertex1.x )
                 imgui.activeWindow.cursor.setF32( x / this.framework.imgui.scale, y / this.framework.imgui.scale - 8 / 2 );
             else
                 imgui.activeWindow.cursor.setF32( x / this.framework.imgui.scale - str.length * 8 - 8, y / this.framework.imgui.scale - 8 / 2 );
@@ -145,19 +146,19 @@ class GuideNormalization extends Guide
 
             if( this.showPositions )
             {
-                str = "" + this.endPosition.x.toFixed(decimals) + "," + this.endPosition.y.toFixed(decimals);
-                [x,y] = this.camera.convertWorldToScreen( this.framework.canvas, this.endPosition.x, this.endPosition.y );
+                str = "" + this.vertex1.x.toFixed(decimals) + "," + this.vertex1.y.toFixed(decimals);
+                [x,y] = this.camera.convertWorldToScreen( this.framework.canvas, this.vertex1.x, this.vertex1.y );
                 imgui.activeWindow.cursor.setF32( x / this.framework.imgui.scale, y / this.framework.imgui.scale );
                 imgui.text( str );
             }
 
             // Hypotenuse.
-            p1 = this.startPosition;
-            p2 = this.endPosition;
+            p1 = this.vertexOrigin;
+            p2 = this.vertex1;
             midPos = p1.plus( p2 ).dividedBy( 2 );
             str = "" + p1.minus( p2 ).length().toFixed(decimals);
             [x,y] = this.camera.convertWorldToScreen( this.framework.canvas, midPos.x, midPos.y );
-            if( this.startPosition.x < this.endPosition.x )
+            if( this.vertexOrigin.x < this.vertex1.x )
                 imgui.activeWindow.cursor.setF32( x / this.framework.imgui.scale - str.length * 8 - 8, y / this.framework.imgui.scale - 8 );
             else
                 imgui.activeWindow.cursor.setF32( x / this.framework.imgui.scale, y / this.framework.imgui.scale - 8 );
@@ -165,60 +166,73 @@ class GuideNormalization extends Guide
         }
 
         // Axes.
-        this.renderer.drawVector( this.startPosition, new vec2( this.endPosition.x, this.startPosition.y ), xAxisColor );
-        this.renderer.drawVector( new vec2( this.endPosition.x, this.startPosition.y ), this.endPosition, yAxisColor );
+        this.renderer.drawVector( this.vertexOrigin, new vec2( this.vertex1.x, this.vertexOrigin.y ), xAxisColor );
+        this.renderer.drawVector( new vec2( this.vertex1.x, this.vertexOrigin.y ), this.vertex1, yAxisColor );
 
         // Hypotenuse.
-        this.renderer.drawVector( this.startPosition, this.endPosition, endColor );
+        this.renderer.drawVector( this.vertexOrigin, this.vertex1, endColor );
 
         // Hypotenuse normalized.
-        this.renderer.drawVector( this.startPosition, this.startPosition.plus( this.endPosition.minus( this.startPosition ).getNormalized() ), normalizedColor );
+        this.renderer.drawVector( this.vertexOrigin, this.vertexOrigin.plus( this.vertex1.minus( this.vertexOrigin ).getNormalized() ), normalizedColor );
 
         // Start vertex position.
-        this.renderer.drawPoint( new vec3( this.startPosition.x, this.startPosition.y, 0 ), startColor );
+        this.renderer.drawPoint( new vec3( this.vertexOrigin.x, this.vertexOrigin.y, 0 ), startColor );
 
         // End vertex position.
-        this.renderer.drawPoint( new vec3( this.endPosition.x, this.endPosition.y, 0 ), endColor );
+        this.renderer.drawPoint( new vec3( this.vertex1.x, this.vertex1.y, 0 ), endColor );
     }
 
     onMouseMove(x, y)
     {
-        let [orthoX, orthoY] = super.onMouseMove( x, y );
+        let [worldX, worldY] = super.onMouseMove( x, y );
 
         if( this.framework.imgui.isHoveringWindow )
             return;
 
         if( this.dragging )
         {
-            this.endPosition.set( this.mousePosition );
+            this.vertexMoving.set( this.mousePosition );
         }
     }
 
     onMouseDown(buttonID, x, y)
     {
-        let [orthoX, orthoY] = super.onMouseDown( buttonID, x, y );
+        let [worldX, worldY] = super.onMouseDown( buttonID, x, y );
 
         if( this.framework.imgui.isHoveringWindow )
             return;
 
         if( buttonID == 0 )
         {
-            this.startPosition.setF32( orthoX, orthoY );
-            this.endPosition.setF32( orthoX, orthoY );
-            this.dragging = true;
+            //this.vertexOrigin.setF32( worldX, worldY );
+            if( this.vertex1.distanceFrom( new vec2( worldX, worldY ) ) < 0.15 )
+            {
+                this.vertexMoving = this.vertex1;
+            }
+            else if( this.vertexOrigin.distanceFrom( new vec2( worldX, worldY ) ) < 0.15 )
+            {
+                this.vertexMoving = this.vertexOrigin;
+            }
+
+            if( this.vertexMoving != null )
+            {
+                this.vertexMoving.setF32( worldX, worldY );
+                this.dragging = true;
+            }
         }
     }
 
     onMouseUp(buttonID, x, y)
     {
-        let [orthoX, orthoY] = super.onMouseUp( buttonID, x, y );
+        let [worldX, worldY] = super.onMouseUp( buttonID, x, y );
 
         if( this.framework.imgui.isHoveringWindow )
             return;
 
         if( buttonID == 0 && this.dragging == true )
         {
-            this.endPosition.setF32( orthoX, orthoY );
+            this.vertexMoving.setF32( worldX, worldY );
+            this.vertexMoving = null;
             this.dragging = false;
         }
     }

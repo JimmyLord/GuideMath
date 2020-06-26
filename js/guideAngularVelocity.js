@@ -32,6 +32,8 @@
 
     initWindows(force)
     {
+        super.initWindows( force );
+
         let w = this.framework.canvas.width / this.framework.imgui.scale;
         let h = this.framework.canvas.height / this.framework.imgui.scale;
 
