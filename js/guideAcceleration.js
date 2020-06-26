@@ -34,7 +34,6 @@ class GuideAcceleration extends Guide
 
         this.vertexRadius = 0.5;
 
-        this.mousePosition = new vec2( 0, 0 );
         this.startPosition = new vec2( 0, 0 );
         this.endPosition = new vec2( 1.5, 0.5 );
 
@@ -474,8 +473,6 @@ class GuideAcceleration extends Guide
 
         if( this.framework.imgui.isHoveringWindow )
             return;
-
-        this.mousePosition.setF32( orthoX, orthoY );
 
         if( this.dragging )
         {

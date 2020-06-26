@@ -8,7 +8,6 @@
         
         this.dragging = false;
 
-        this.mousePosition = new vec2(0);
         this.centerPosition = new vec2(0);
         this.startPosition = new vec2(1, 1);
         this.endPosition = new vec2(-1, 1);
@@ -243,7 +242,7 @@
             //p2 = new vec2( this.endPosition.x, p1.y );
             //midPos = p1.plus( p2 ).dividedBy( 2 );
             //str = "" + p1.minus( p2 ).length().toFixed(decimals);
-            //[x,y] = this.camera.convertOrthoToScreen( this.framework.canvas, midPos.x, midPos.y );
+            //[x,y] = this.camera.convertWorldToScreen( this.framework.canvas, midPos.x, midPos.y );
             //if( this.startPosition.y < this.endPosition.y )
             //    imgui.activeWindow.cursor.setF32( x / this.framework.imgui.scale - str.length * 8 / 2, y / this.framework.imgui.scale );
             //else
@@ -266,8 +265,6 @@
 
         if( this.framework.imgui.isHoveringWindow )
             return;
-
-        this.mousePosition.setF32( orthoX, orthoY );
 
         if( this.dragging )
         {

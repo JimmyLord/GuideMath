@@ -6,7 +6,6 @@ class GuideNormalization extends Guide
 
         this.vertexRadius = 0.5;
 
-        this.mousePosition = new vec2( 0, 0 );
         this.startPosition = new vec2( 0, 0 );
         this.endPosition = new vec2( 1.5, 0.5 );
 
@@ -114,7 +113,7 @@ class GuideNormalization extends Guide
             p2 = new vec2( this.endPosition.x, p1.y );
             midPos = p1.plus( p2 ).dividedBy( 2 );
             str = "" + p1.minus( p2 ).length().toFixed(decimals);
-            [x,y] = this.camera.convertOrthoToScreen( this.framework.canvas, midPos.x, midPos.y );
+            [x,y] = this.camera.convertWorldToScreen( this.framework.canvas, midPos.x, midPos.y );
             if( this.startPosition.y < this.endPosition.y )
                 imgui.activeWindow.cursor.setF32( x / this.framework.imgui.scale - str.length * 8 / 2, y / this.framework.imgui.scale );
             else
@@ -124,7 +123,7 @@ class GuideNormalization extends Guide
             if( this.showPositions )
             {
                 str = "" + this.startPosition.x.toFixed(decimals) + "," + this.startPosition.y.toFixed(decimals);
-                [x,y] = this.camera.convertOrthoToScreen( this.framework.canvas, this.startPosition.x, this.startPosition.y );
+                [x,y] = this.camera.convertWorldToScreen( this.framework.canvas, this.startPosition.x, this.startPosition.y );
                 if( p1.x < p2.x )
                     imgui.activeWindow.cursor.setF32( x / this.framework.imgui.scale - str.length * 8, y / this.framework.imgui.scale );
                 else
@@ -137,7 +136,7 @@ class GuideNormalization extends Guide
             p1 = new vec2( p2.x, this.startPosition.y );
             midPos = p1.plus( p2 ).dividedBy( 2 );
             str = "" + p1.minus( p2 ).length().toFixed(decimals);
-            [x,y] = this.camera.convertOrthoToScreen( this.framework.canvas, midPos.x, midPos.y );
+            [x,y] = this.camera.convertWorldToScreen( this.framework.canvas, midPos.x, midPos.y );
             if( this.startPosition.x < this.endPosition.x )
                 imgui.activeWindow.cursor.setF32( x / this.framework.imgui.scale, y / this.framework.imgui.scale - 8 / 2 );
             else
@@ -147,7 +146,7 @@ class GuideNormalization extends Guide
             if( this.showPositions )
             {
                 str = "" + this.endPosition.x.toFixed(decimals) + "," + this.endPosition.y.toFixed(decimals);
-                [x,y] = this.camera.convertOrthoToScreen( this.framework.canvas, this.endPosition.x, this.endPosition.y );
+                [x,y] = this.camera.convertWorldToScreen( this.framework.canvas, this.endPosition.x, this.endPosition.y );
                 imgui.activeWindow.cursor.setF32( x / this.framework.imgui.scale, y / this.framework.imgui.scale );
                 imgui.text( str );
             }
@@ -157,7 +156,7 @@ class GuideNormalization extends Guide
             p2 = this.endPosition;
             midPos = p1.plus( p2 ).dividedBy( 2 );
             str = "" + p1.minus( p2 ).length().toFixed(decimals);
-            [x,y] = this.camera.convertOrthoToScreen( this.framework.canvas, midPos.x, midPos.y );
+            [x,y] = this.camera.convertWorldToScreen( this.framework.canvas, midPos.x, midPos.y );
             if( this.startPosition.x < this.endPosition.x )
                 imgui.activeWindow.cursor.setF32( x / this.framework.imgui.scale - str.length * 8 - 8, y / this.framework.imgui.scale - 8 );
             else
@@ -188,8 +187,6 @@ class GuideNormalization extends Guide
 
         if( this.framework.imgui.isHoveringWindow )
             return;
-
-        this.mousePosition.setF32( orthoX, orthoY );
 
         if( this.dragging )
         {
