@@ -64,6 +64,7 @@ class MainProject
     
         // Create the guides.
         this.scenes["Normalization"] = new GuideNormalization( this, this.framework );
+        this.scenes["Dot Product"] = new GuideDotProduct( this, this.framework );
         this.scenes["Angular Velocity"] = new GuideAngularVelocity( this, this.framework );
         this.scenes["Acceleration"] = new GuideAcceleration( this, this.framework );
 

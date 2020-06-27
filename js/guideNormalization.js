@@ -91,13 +91,6 @@ class GuideNormalization extends Guide
             imgui.text( "Magnitude:  " + direction.length().toFixed(decimals) );
         }
 
-        // Colors.
-        let startColor = this.framework.resources.materials["blue"];
-        let endColor = this.framework.resources.materials["blue"];
-        let xAxisColor = this.framework.resources.materials["red"];
-        let yAxisColor = this.framework.resources.materials["green"];
-        let normalizedColor = this.framework.resources.materials["white"];
-
         // Grid.
         if( this.mainProject.showGrid )
         {
@@ -164,6 +157,13 @@ class GuideNormalization extends Guide
                 imgui.activeWindow.cursor.setF32( x / this.framework.imgui.scale, y / this.framework.imgui.scale - 8 );
             imgui.text( str );
         }
+
+        // Colors.
+        let startColor = this.framework.resources.materials["blue"];
+        let endColor = this.framework.resources.materials["blue"];
+        let xAxisColor = this.framework.resources.materials["red"];
+        let yAxisColor = this.framework.resources.materials["green"];
+        let normalizedColor = this.framework.resources.materials["white"];
 
         // Axes.
         this.renderer.drawVector( this.vertexOrigin, new vec2( this.vertex1.x, this.vertexOrigin.y ), xAxisColor );
