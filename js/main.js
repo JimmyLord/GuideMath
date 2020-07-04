@@ -63,13 +63,18 @@ class MainProject
         resources.meshes["circle"].createCircle( 200, 1.0, true );
     
         // Create the guides.
-        this.scenes["Normalization"] = new GuideNormalization( this, this.framework );
-        this.scenes["Dot Product"] = new GuideDotProduct( this, this.framework );
-        this.scenes["Angular Velocity"] = new GuideAngularVelocity( this, this.framework );
-        this.scenes["Acceleration"] = new GuideAcceleration( this, this.framework );
+        this.scenes["Math"] = [];
+        this.scenes["Math"]["Normalization"] = new GuideNormalization( this, this.framework );
+        this.scenes["Math"]["Dot Product"] = new GuideDotProduct( this, this.framework );
+        this.scenes["Physics"] = [];
+        this.scenes["Physics"]["Angular Velocity"] = new GuideAngularVelocity( this, this.framework );
+        this.scenes["Physics"]["Acceleration"] = new GuideAcceleration( this, this.framework );
+        this.scenes["TODO"] = [];
+        this.scenes["TODO"]["TODO"] = null;
 
-        this.currentSceneKey = "Normalization";
-        this.currentScene = this.scenes[this.currentSceneKey];
+        this.currentSceneKey = "Math/Normalization";
+        let parts = this.currentSceneKey.split( '/' );
+        this.currentScene = this.scenes[parts[0]][parts[1]];
 
         this.loadState();
     }
@@ -79,9 +84,17 @@ class MainProject
         if( this.framework.storage != null )
         {
             //this.camera.fromJSON( this.framework.storage["cameraState"] );
-            this.currentSceneKey = this.framework.storage["currentSceneKey"];
-            if( this.scenes[this.currentSceneKey] !== undefined )
-                this.currentScene = this.scenes[this.currentSceneKey];
+            let key = this.framework.storage["currentSceneKey"];
+            let parts = key.split( '/' );
+            let scene = null;
+            if( this.scenes[parts[0]] !== undefined && this.scenes[parts[0]][parts[1]] !== undefined )
+                scene = this.scenes[parts[0]][parts[1]];
+
+            if( scene !== null )
+            {
+                this.currentScene = scene;
+                this.currentSceneKey = key;
+            }
         }
     }
 
@@ -103,43 +116,54 @@ class MainProject
         imgui.mainMenuBar();
         if( imgui.menu( "Guides" ) )
         {
-            for( let key in this.scenes )
+            for( let key1 in this.scenes )
             {
-                if( imgui.menuItem( key ) )
+                if( imgui.submenu( key1 ) )
                 {
-                    this.currentSceneKey = key;
-                    this.currentScene = this.scenes[this.currentSceneKey];
+                    for( let key2 in this.scenes[key1] )
+                    {
+                        if( imgui.menuItem( key2 ) )
+                        {
+                            this.currentSceneKey = key1 + "/" + key2;
+                            this.currentScene = this.scenes[key1][key2];
 
-                    imgui.closePopup();
-                    this.framework.refresh();
+                            imgui.closeAllMenus();
+                            this.framework.refresh();
+                        }
+                    }
+                    imgui.endSubmenu();
                 }
             }
         }
         if( imgui.menu( "Settings" ) )
         {
+            if( imgui.submenu( "UI Scale" ) )
+            {
+                if( imgui.menuItem( "1" ) )
+                {
+                    imgui.scale = 1;
+                    imgui.closeAllMenus();
+                    this.framework.refresh();
+                }
+                if( imgui.menuItem( "2" ) )
+                {
+                    imgui.scale = 2;
+                    imgui.closeAllMenus();
+                    this.framework.refresh();
+                }
+                if( imgui.menuItem( "3" ) )
+                {
+                    imgui.scale = 3;
+                    imgui.closeAllMenus();
+                    this.framework.refresh();
+                }
+                imgui.endSubmenu();
+            }
             if( imgui.menuItem( "Reset Layout" ) )
             {
                 this.initWindows( true );
                 this.currentScene.initWindows( true );
-                imgui.closePopup();
-                this.framework.refresh();
-            }
-            if( imgui.menuItem( "UI Scale: 1" ) )
-            {
-                imgui.scale = 1;
-                imgui.closePopup();
-                this.framework.refresh();
-            }
-            if( imgui.menuItem( "UI Scale: 2" ) )
-            {
-                imgui.scale = 2;
-                imgui.closePopup();
-                this.framework.refresh();
-            }
-            if( imgui.menuItem( "UI Scale: 3" ) )
-            {
-                imgui.scale = 3;
-                imgui.closePopup();
+                imgui.closeAllMenus();
                 this.framework.refresh();
             }
         }
@@ -148,7 +172,7 @@ class MainProject
             if( imgui.menuItem( "Show grid" ) )
             {
                 this.showGrid = !this.showGrid;
-                imgui.closePopup();
+                imgui.closeAllMenus();
                 this.framework.refresh();
             }
         }
@@ -158,6 +182,12 @@ class MainProject
 
     draw()
     {
+        //let imgui = this.framework.imgui;
+        //imgui.window( "Debug" );
+        //imgui.text( "" + imgui.windowBeingResized?.name );
+        //for( let key in imgui.activeMenus )
+        //    imgui.text( key );
+
         this.currentScene.draw();
     }
 

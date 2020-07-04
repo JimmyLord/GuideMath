@@ -20,14 +20,7 @@ class GuideNormalization extends Guide
 
     initWindows(force)
     {
-        super.initWindows( force );
-
-        let w = this.framework.canvas.width / this.framework.imgui.scale;
-        let h = this.framework.canvas.height / this.framework.imgui.scale;
-
-        this.framework.imgui.initWindow( "FullFrame", !force, new vec2(0,0), new vec2(w,h), false, false );
-        this.framework.imgui.initWindow( "Definitions", !force, new vec2(2,12), new vec2(600,40) );
-        this.framework.imgui.initWindow( "Normalization", !force, new vec2(2,55), new vec2(205,110) );
+        super.initWindows( "Normalization", force );
     }
 
     free()

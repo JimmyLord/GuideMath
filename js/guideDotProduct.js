@@ -21,14 +21,7 @@
 
     initWindows(force)
     {
-        super.initWindows( force );
-
-        let w = this.framework.canvas.width / this.framework.imgui.scale;
-        let h = this.framework.canvas.height / this.framework.imgui.scale;
-
-        this.framework.imgui.initWindow( "FullFrame", !force, new vec2(0,0), new vec2(w,h), false, false );
-        this.framework.imgui.initWindow( "Definitions", !force, new vec2(2,12), new vec2(600,40) );
-        this.framework.imgui.initWindow( "Dot Product", !force, new vec2(2,55), new vec2(205,110) );
+        super.initWindows( "Dot Product", force );
     }
 
     free()
@@ -75,9 +68,9 @@
             imgui.text( "reordered: cos(θ) = dot / ||A|| * ||B||");
             imgui.window( "Dot Product" );
 
-            imgui.text( "A:      " + this.vertex1.x.toFixed(decimals) + ", " + this.vertex1.y.toFixed(decimals) );
-            imgui.text( "B:      " + this.vertex2.x.toFixed(decimals) + ", " + this.vertex2.y.toFixed(decimals) );
-            imgui.text( "dot:    " + dot.toFixed(decimals) );
+            imgui.text( "A:   " + this.vertex1.x.toFixed(decimals) + ", " + this.vertex1.y.toFixed(decimals) );
+            imgui.text( "B:   " + this.vertex2.x.toFixed(decimals) + ", " + this.vertex2.y.toFixed(decimals) );
+            imgui.text( "dot: " + dot.toFixed(decimals) );
         }
 
         if( this.page == 2 )

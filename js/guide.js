@@ -14,8 +14,10 @@ class Guide
         this.renderer = new RenderHelpers( this.framework, this.camera );
     }
 
-    initWindows(force)
+    initWindows(guideName, force)
     {
+        let imgui = this.framework.imgui;
+
         if( force )
         {
             this.camera.position.setF32( 0, 0, -3 );
@@ -24,6 +26,13 @@ class Guide
             //this.camera.desiredHeight = 3;
             //this.camera.aspectRatio = this.framework.canvas.width / this.framework.canvas.height;
         }
+
+        let w = this.framework.canvas.width / this.framework.imgui.scale;
+        let h = this.framework.canvas.height / this.framework.imgui.scale;
+
+        imgui.initWindow( "FullFrame", !force, new vec2(0,0), new vec2(w,h), false, false );
+        imgui.initWindow( "Definitions", !force, new vec2(2,imgui.mainMenuBarHeight + 1), new vec2(600,40) );
+        imgui.initWindow( guideName, !force, new vec2(2,imgui.mainMenuBarHeight + 1 + 40 + 1), new vec2(205,130) );
     }
 
     update(deltaTime)
