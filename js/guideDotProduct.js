@@ -1,4 +1,19 @@
-﻿class GuideDotProduct extends Guide
+﻿function CreateGuide_DotProduct(mainProject, framework)
+{
+    MasterGuideList["Math"]["DotProduct"].guide = new GuideDotProduct( mainProject, framework );
+}
+
+function RegisterGuide_DotProduct()
+{
+    if( MasterGuideList["Math"] === undefined )
+        MasterGuideList["Math"] = [];
+
+    MasterGuideList["Math"]["DotProduct"] = {};
+    MasterGuideList["Math"]["DotProduct"].createFunc = CreateGuide_DotProduct;
+    MasterGuideList["Math"]["DotProduct"].guide = null;
+}
+
+class GuideDotProduct extends Guide
 {
     constructor(mainProject, framework)
     {
@@ -178,3 +193,5 @@
         }
     }
 }
+
+RegisterGuide_DotProduct();

@@ -12,9 +12,9 @@ class MainProject
         this.framework = framework;
         this.framework.autoRefresh = false;
 
-        this.scenes = [];
-        this.currentScene = null;
-        this.currentSceneKey = null;
+        this.guides = MasterGuideList;
+        this.currentGuide = null;
+        this.currentGuidePath = null;
 
         // Settings.
         this.showGrid = true;
@@ -35,7 +35,7 @@ class MainProject
 
     shutdown()
     {
-        this.currentScene = null;
+        this.currentGuide = null;
 
         this.framework = null;
     }
@@ -61,22 +61,16 @@ class MainProject
         resources.meshes["edge"].createBox( new vec2( 1, 0.02 ) );
         resources.meshes["circle"] = new Mesh( this.framework.gl );
         resources.meshes["circle"].createCircle( 200, 1.0, true );
-    
-        // Create the guides.
-        this.scenes["Math"] = [];
-        this.scenes["Math"]["Normalization"] = new GuideNormalization( this, this.framework );
-        this.scenes["Math"]["Dot Product"] = new GuideDotProduct( this, this.framework );
-        this.scenes["Physics"] = [];
-        this.scenes["Physics"]["Angular Velocity"] = new GuideAngularVelocity( this, this.framework );
-        this.scenes["Physics"]["Acceleration"] = new GuideAcceleration( this, this.framework );
-        this.scenes["TODO"] = [];
-        this.scenes["TODO"]["TODO"] = null;
 
-        this.currentSceneKey = "Math/Normalization";
-        let parts = this.currentSceneKey.split( '/' );
-        this.currentScene = this.scenes[parts[0]][parts[1]];
+        // Preinit imgui to have a main menu bar so guide windows show up in the right spots.
+        this.framework.imgui.mainMenuBar();
 
         this.loadState();
+
+        if( this.currentGuide == null )
+        {
+            this.switchToGuide( "Math/Normalization" );
+        }
     }
 
     loadState()
@@ -84,16 +78,10 @@ class MainProject
         if( this.framework.storage != null )
         {
             //this.camera.fromJSON( this.framework.storage["cameraState"] );
-            let key = this.framework.storage["currentSceneKey"];
-            let parts = key.split( '/' );
-            let scene = null;
-            if( this.scenes[parts[0]] !== undefined && this.scenes[parts[0]][parts[1]] !== undefined )
-                scene = this.scenes[parts[0]][parts[1]];
-
-            if( scene !== null )
+            let key = this.framework.storage["currentGuidePath"];
+            if( key !== undefined )
             {
-                this.currentScene = scene;
-                this.currentSceneKey = key;
+                this.switchToGuide( key );
             }
         }
     }
@@ -104,8 +92,22 @@ class MainProject
         {
             //if( this.camera )
                 //this.framework.storage["cameraState"] = JSON.stringify( this.camera );
-            this.framework.storage["currentSceneKey"] = this.currentSceneKey;
+            this.framework.storage["currentGuidePath"] = this.currentGuidePath;
         }
+    }
+
+    switchToGuide( guidePath )
+    {
+        this.currentGuidePath = guidePath;
+
+        let parts = this.currentGuidePath.split( '/' );
+
+        if( this.guides[parts[0]][parts[1]].guide === null )
+        {
+            this.guides[parts[0]][parts[1]].createFunc( this, this.framework );
+        }
+
+        this.currentGuide = this.guides[parts[0]][parts[1]].guide;
     }
 
     update(deltaTime, currentTime)
@@ -116,16 +118,15 @@ class MainProject
         imgui.mainMenuBar();
         if( imgui.menu( "Guides" ) )
         {
-            for( let key1 in this.scenes )
+            for( let key1 in this.guides )
             {
                 if( imgui.submenu( key1 ) )
                 {
-                    for( let key2 in this.scenes[key1] )
+                    for( let key2 in this.guides[key1] )
                     {
                         if( imgui.menuItem( key2 ) )
                         {
-                            this.currentSceneKey = key1 + "/" + key2;
-                            this.currentScene = this.scenes[key1][key2];
+                            this.switchToGuide( key1 + "/" + key2 );
 
                             imgui.closeAllMenus();
                             this.framework.refresh();
@@ -162,7 +163,7 @@ class MainProject
             if( imgui.menuItem( "Reset Layout" ) )
             {
                 this.initWindows( true );
-                this.currentScene.initWindows( true );
+                this.currentGuide.initWindows( true );
                 imgui.closeAllMenus();
                 this.framework.refresh();
             }
@@ -177,7 +178,7 @@ class MainProject
             }
         }
 
-        this.currentScene.update( deltaTime )
+        this.currentGuide.update( deltaTime )
     }
 
     draw()
@@ -188,7 +189,7 @@ class MainProject
         //for( let key in imgui.activeMenus )
         //    imgui.text( key );
 
-        this.currentScene.draw();
+        this.currentGuide.draw();
     }
 
     onBeforeUnload()
@@ -198,44 +199,44 @@ class MainProject
 
     onMouseMove(x, y)
     {
-        this.currentScene.onMouseMove( x, y );
+        this.currentGuide.onMouseMove( x, y );
 
         this.framework.refresh();
     }
 
     onMouseDown(buttonID, x, y)
     {
-        this.currentScene.onMouseDown( buttonID, x, y );
+        this.currentGuide.onMouseDown( buttonID, x, y );
 
         this.framework.refresh();
     }
 
     onMouseUp(buttonID, x, y)
     {
-        this.currentScene.onMouseUp( buttonID, x, y );
+        this.currentGuide.onMouseUp( buttonID, x, y );
 
         this.framework.refresh();
     }
 
     onMouseWheel(direction)
     {
-        this.currentScene.onMouseWheel( direction );
+        this.currentGuide.onMouseWheel( direction );
 
         this.framework.refresh();
     }
 
     onKeyDown(keyCode)
     {
-        if( this.currentScene.onKeyDown )
-            this.currentScene.onKeyDown( keyCode );
+        if( this.currentGuide.onKeyDown )
+            this.currentGuide.onKeyDown( keyCode );
 
         this.framework.refresh();
     }
 
     onKeyUp(keyCode)
     {
-        if( this.currentScene.onKeyUp )
-            this.currentScene.onKeyUp( keyCode );
+        if( this.currentGuide.onKeyUp )
+            this.currentGuide.onKeyUp( keyCode );
 
         this.framework.refresh();
     }
@@ -252,4 +253,3 @@ function main()
 }
 
 main()
-    

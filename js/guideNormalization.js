@@ -1,3 +1,18 @@
+function CreateGuide_Normalization(mainProject, framework)
+{
+    MasterGuideList["Math"]["Normalization"].guide = new GuideNormalization( mainProject, framework );
+}
+
+function RegisterGuide_Normalization()
+{
+    if( MasterGuideList["Math"] === undefined )
+        MasterGuideList["Math"] = [];
+
+    MasterGuideList["Math"]["Normalization"] = {};
+    MasterGuideList["Math"]["Normalization"].createFunc = CreateGuide_Normalization;
+    MasterGuideList["Math"]["Normalization"].guide = null;
+}
+
 class GuideNormalization extends Guide
 {
     constructor(mainProject, framework)
@@ -230,3 +245,5 @@ class GuideNormalization extends Guide
         }
     }
 }
+
+RegisterGuide_Normalization();

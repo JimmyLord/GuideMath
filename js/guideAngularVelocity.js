@@ -1,4 +1,19 @@
-﻿class GuideAngularVelocity extends Guide
+﻿function CreateGuide_AngularVelocity(mainProject, framework)
+{
+    MasterGuideList["Physics"]["AngularVelocity"].guide = new GuideAngularVelocity( mainProject, framework );
+}
+
+function RegisterGuide_AngularVelocity()
+{
+    if( MasterGuideList["Physics"] === undefined )
+        MasterGuideList["Physics"] = [];
+
+    MasterGuideList["Physics"]["AngularVelocity"] = {};
+    MasterGuideList["Physics"]["AngularVelocity"].createFunc = CreateGuide_AngularVelocity;
+    MasterGuideList["Physics"]["AngularVelocity"].guide = null;
+}
+
+class GuideAngularVelocity extends Guide
 {
     constructor(mainProject, framework)
     {
@@ -296,3 +311,5 @@
         }
     }
 }
+
+RegisterGuide_AngularVelocity();

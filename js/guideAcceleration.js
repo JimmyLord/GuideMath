@@ -1,4 +1,19 @@
-﻿class GuideAccelerationObject
+﻿function CreateGuide_Acceleration(mainProject, framework)
+{
+    MasterGuideList["Physics"]["Acceleration"].guide = new GuideAcceleration( mainProject, framework );
+}
+
+function RegisterGuide_Acceleration()
+{
+    if( MasterGuideList["Physics"] === undefined )
+        MasterGuideList["Physics"] = [];
+
+    MasterGuideList["Physics"]["Acceleration"] = {};
+    MasterGuideList["Physics"]["Acceleration"].createFunc = CreateGuide_Acceleration;
+    MasterGuideList["Physics"]["Acceleration"].guide = null;
+}
+
+class GuideAccelerationObject
 {
     constructor(pos, vel, acc, color)
     {
@@ -504,3 +519,5 @@ class GuideAcceleration extends Guide
         }
     }
 }
+
+RegisterGuide_Acceleration();

@@ -1,3 +1,5 @@
+var MasterGuideList = [];
+
 class Guide
 {
     constructor(mainProject, framework)
