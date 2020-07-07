@@ -114,56 +114,54 @@ class GuideNormalization extends Guide
             p1 = this.vertexOrigin;
             p2 = new vec2( this.vertex1.x, p1.y );
             midPos = p1.plus( p2 ).dividedBy( 2 );
-            str = "" + p1.minus( p2 ).length().toFixed(decimals);
-            [x,y] = this.camera.convertWorldToScreen( this.framework.canvas, midPos.x, midPos.y );
             if( this.vertexOrigin.y < this.vertex1.y )
-                imgui.activeWindow.cursor.setF32( x / this.framework.imgui.scale - str.length * 8 / 2, y / this.framework.imgui.scale );
+                this.renderer.drawString( "" + p1.minus( p2 ).length().toFixed(decimals), midPos.x, midPos.y, align.x.center, align.y.top );
             else
-                imgui.activeWindow.cursor.setF32( x / this.framework.imgui.scale - str.length * 8 / 2, y / this.framework.imgui.scale - 12 );
-            imgui.text( str );
+                this.renderer.drawString( "" + p1.minus( p2 ).length().toFixed(decimals), midPos.x, midPos.y, align.x.center, align.y.bottom );
 
             if( this.showPositions )
             {
-                str = "" + this.vertexOrigin.x.toFixed(decimals) + "," + this.vertexOrigin.y.toFixed(decimals);
-                [x,y] = this.camera.convertWorldToScreen( this.framework.canvas, this.vertexOrigin.x, this.vertexOrigin.y );
                 if( p1.x < p2.x )
-                    imgui.activeWindow.cursor.setF32( x / this.framework.imgui.scale - str.length * 8, y / this.framework.imgui.scale );
+                    this.renderer.drawString( "" + this.vertexOrigin.x.toFixed(decimals) + "," + this.vertexOrigin.y.toFixed(decimals), this.vertexOrigin.x, this.vertexOrigin.y, align.x.right, align.y.center );
                 else
-                    imgui.activeWindow.cursor.setF32( x / this.framework.imgui.scale, y / this.framework.imgui.scale );
-                imgui.text( str );
+                    this.renderer.drawString( "" + this.vertexOrigin.x.toFixed(decimals) + "," + this.vertexOrigin.y.toFixed(decimals), this.vertexOrigin.x + 0.03, this.vertexOrigin.y, align.x.left, align.y.center );
             }
 
             // Y length.
             p2 = this.vertex1;
             p1 = new vec2( p2.x, this.vertexOrigin.y );
             midPos = p1.plus( p2 ).dividedBy( 2 );
-            str = "" + p1.minus( p2 ).length().toFixed(decimals);
-            [x,y] = this.camera.convertWorldToScreen( this.framework.canvas, midPos.x, midPos.y );
-            if( this.vertexOrigin.x < this.vertex1.x )
-                imgui.activeWindow.cursor.setF32( x / this.framework.imgui.scale, y / this.framework.imgui.scale - 8 / 2 );
+            if( this.vertex1.x < this.vertexOrigin.x )
+                this.renderer.drawString( "" + p1.minus( p2 ).length().toFixed(decimals), midPos.x-0.02, midPos.y, align.x.right, align.y.center );
             else
-                imgui.activeWindow.cursor.setF32( x / this.framework.imgui.scale - str.length * 8 - 8, y / this.framework.imgui.scale - 8 / 2 );
-            imgui.text( str );
+                this.renderer.drawString( "" + p1.minus( p2 ).length().toFixed(decimals), midPos.x, midPos.y, align.x.left, align.y.center );
 
             if( this.showPositions )
             {
-                str = "" + this.vertex1.x.toFixed(decimals) + "," + this.vertex1.y.toFixed(decimals);
-                [x,y] = this.camera.convertWorldToScreen( this.framework.canvas, this.vertex1.x, this.vertex1.y );
-                imgui.activeWindow.cursor.setF32( x / this.framework.imgui.scale, y / this.framework.imgui.scale );
-                imgui.text( str );
+                if( this.vertex1.x < this.vertexOrigin.x )
+                    this.renderer.drawString( "" + this.vertex1.x.toFixed(decimals) + "," + this.vertex1.y.toFixed(decimals), this.vertex1.x, this.vertex1.y, align.x.right, align.y.center );
+                else
+                    this.renderer.drawString( "" + this.vertex1.x.toFixed(decimals) + "," + this.vertex1.y.toFixed(decimals), this.vertex1.x+0.03, this.vertex1.y, align.x.left, align.y.center );
             }
 
             // Hypotenuse.
             p1 = this.vertexOrigin;
             p2 = this.vertex1;
             midPos = p1.plus( p2 ).dividedBy( 2 );
-            str = "" + p1.minus( p2 ).length().toFixed(decimals);
-            [x,y] = this.camera.convertWorldToScreen( this.framework.canvas, midPos.x, midPos.y );
-            if( this.vertexOrigin.x < this.vertex1.x )
-                imgui.activeWindow.cursor.setF32( x / this.framework.imgui.scale - str.length * 8 - 8, y / this.framework.imgui.scale - 8 );
+            if( this.vertex1.y < this.vertexOrigin.y )
+            {
+                if( this.vertex1.x < this.vertexOrigin.x )
+                    this.renderer.drawString( "" + p1.minus( p2 ).length().toFixed(decimals), midPos.x+0.1, midPos.y-0.03, align.x.center, align.y.top );
+                else
+                    this.renderer.drawString( "" + p1.minus( p2 ).length().toFixed(decimals), midPos.x-0.1, midPos.y-0.03, align.x.center, align.y.top );
+            }
             else
-                imgui.activeWindow.cursor.setF32( x / this.framework.imgui.scale, y / this.framework.imgui.scale - 8 );
-            imgui.text( str );
+            {
+                if( this.vertex1.x < this.vertexOrigin.x )
+                    this.renderer.drawString( "" + p1.minus( p2 ).length().toFixed(decimals), midPos.x+0.1, midPos.y, align.x.center, align.y.bottom );
+                else
+                    this.renderer.drawString( "" + p1.minus( p2 ).length().toFixed(decimals), midPos.x-0.1, midPos.y, align.x.center, align.y.bottom );
+            }
         }
 
         // Colors.

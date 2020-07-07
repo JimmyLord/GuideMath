@@ -67,6 +67,8 @@ class RenderHelpers
         imgui.activeWindow.cursor.divideBy( this.framework.imgui.scale );
         imgui.activeWindow.cursor.x += alignX * strW;
         imgui.activeWindow.cursor.y += alignY * strH;
+        imgui.activeWindow.cursor.x = Math.round( imgui.activeWindow.cursor.x );
+        imgui.activeWindow.cursor.y = Math.round( imgui.activeWindow.cursor.y );
 
         imgui.text( str );
     }
