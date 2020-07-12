@@ -1,4 +1,4 @@
-var MasterGuideList = [];
+var MasterGuideList = {};
 
 class Guide
 {

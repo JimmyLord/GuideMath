@@ -17,6 +17,13 @@ class GuideAccelerationObject
 {
     constructor(pos, vel, acc, color)
     {
+        this.initialPos = null;
+        this.initialVel = null;
+        this.initialAcc = null;
+        this.pos = null;
+        this.vel = null;
+        this.acc = null;
+
         this.set( pos, vel, acc );
 
         this.color = color;
@@ -74,6 +81,7 @@ class GuideAcceleration extends Guide
 
         // Settings.
         this.page = -1;
+        this.oldPage = null;
         this.showPositions = false;
         
         // Init imgui window positions and sizes.

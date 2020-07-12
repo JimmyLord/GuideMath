@@ -67,7 +67,7 @@ class MainProject
 
         this.loadState();
 
-        if( this.currentGuide == null )
+        if( this.currentGuide === null )
         {
             this.switchToGuide( "Math/Normalization" );
         }
