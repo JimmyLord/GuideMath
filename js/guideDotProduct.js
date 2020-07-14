@@ -55,9 +55,16 @@ class GuideDotProduct extends Guide
         // Calculate some values.
         let v1 = this.vertex1.minus( this.vertexOrigin );
         let v2 = this.vertex2.minus( this.vertexOrigin );
-        v1.normalize();
-        let dot = v1.dot( v2 );
-        let projectedPoint = this.vertexOrigin.plus( v1.times( dot ) );
+        let dotProduct = v1.dot( v2 );
+        let len1 = v1.length();
+        let len2 = v2.length();
+        let cosTheta = dotProduct / (len1 * len2);
+        let thetaRadians = Math.acos( cosTheta );
+        let thetaDegrees = Math.acos( cosTheta ) / Math.PI * 180;
+
+        let v1normalized = v1.getNormalized();
+        let dotForProjection = v1normalized.dot( v2 );
+        let projectedPoint = this.vertexOrigin.plus( v1normalized.times( dotForProjection ) );
 
         // Menu.
         let imgui = this.framework.imgui;
@@ -69,7 +76,8 @@ class GuideDotProduct extends Guide
         //}
 
         // Add page selector.
-        this.page = this.renderer.addPageSelector( this.framework, this.page, 2 );
+        let numPages = 3;
+        this.page = this.renderer.addPageSelector( this.framework, this.page, numPages );
 
         //if( imgui.checkbox( "Show positions", this.showPositions ) )
         //{
@@ -79,23 +87,35 @@ class GuideDotProduct extends Guide
         if( this.page == 1 )
         {
             imgui.window( "Definitions" );
-            imgui.text( "dot = ||A|| * ||B|| * cos(θ)");
-            imgui.text( "reordered: cos(θ) = dot / ||A|| * ||B||");
+            imgui.text( "The dot product of 2 vectors describes the relationship between those 2 vectors");
+            imgui.text( "as follows: dotProduct = ||A|| * ||B|| * cos(θ)");
             imgui.window( "Dot Product" );
-
-            imgui.text( "A:   " + this.vertex1.x.toFixed(decimals) + ", " + this.vertex1.y.toFixed(decimals) );
-            imgui.text( "B:   " + this.vertex2.x.toFixed(decimals) + ", " + this.vertex2.y.toFixed(decimals) );
-            imgui.text( "dot: " + dot.toFixed(decimals) );
         }
 
         if( this.page == 2 )
         {
             imgui.window( "Definitions" );
-            imgui.text( "dot = v1.x*v2.x + v1.y*v2.y");
+            imgui.text( "dotProduct = ||A|| * ||B|| * cos(θ)");
+            imgui.text( "reordered: cos(θ) = dotProduct / (||A|| * ||B||)");
             imgui.window( "Dot Product" );
-
-            imgui.text( "dot:  " + dot.toFixed(decimals) );
         }
+
+        if( this.page == 3 )
+        {
+            imgui.window( "Definitions" );
+            imgui.text( "The dot product can be calculated easily:");
+            imgui.text( "dotProduct = v1.x*v2.x + v1.y*v2.y");
+            imgui.window( "Dot Product" );
+        }
+
+        imgui.text( "A:   " + this.vertex1.x.toFixed(decimals) + ", " + this.vertex1.y.toFixed(decimals) );
+        imgui.text( "B:   " + this.vertex2.x.toFixed(decimals) + ", " + this.vertex2.y.toFixed(decimals) );
+        imgui.text( "Magnitude of A: " + len1.toFixed(decimals) );
+        imgui.text( "Magnitude of B: " + len2.toFixed(decimals) );
+        imgui.text( "dot:    " + dotProduct.toFixed(decimals) );
+        imgui.text( "cos(θ): " + cosTheta.toFixed(decimals) );
+        imgui.text( "θ:      " + thetaRadians.toFixed(decimals) + " radians" );
+        imgui.text( "θ:      " + thetaDegrees.toFixed(decimals) + " degrees" );
 
         // Grid.
         if( this.mainProject.showGrid )
