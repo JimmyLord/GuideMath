@@ -18,6 +18,7 @@ class MainProject
 
         // Settings.
         this.showGrid = true;
+        this.defaultPath = "Math/Normalization";
 
         // Init imgui window positions and sizes.
         this.initWindows( false );
@@ -69,7 +70,7 @@ class MainProject
 
         if( this.currentGuide === null )
         {
-            this.switchToGuide( "Math/Normalization" );
+            this.switchToGuide( this.defaultPath );
         }
     }
 
@@ -79,8 +80,9 @@ class MainProject
         {
             //this.camera.fromJSON( this.framework.storage["cameraState"] );
             let key = this.framework.storage["currentGuidePath"];
-            if( key !== undefined )
+            if( this.isValidPath( key ) )
             {
+                window.location.hash = key;
                 this.switchToGuide( key );
             }
         }
@@ -96,11 +98,41 @@ class MainProject
         }
     }
 
-    switchToGuide( guidePath )
+    isValidPath(guidePath)
     {
+        if( guidePath === undefined )
+            return false;
+
+        let parts = guidePath.split( '/' );
+
+        // Cut out hash character from start of string if it's there.
+        if( parts[0][0] == '#' )
+            parts[0] = parts[0].substring( 1 );
+
+        if( parts.length < 2 )
+            return false;
+
+        if( this.guides[parts[0]] === undefined )
+            return false;
+
+        if( this.guides[parts[0]][parts[1]] === undefined )
+            return false;
+
+        return true;
+    }
+
+    switchToGuide(guidePath)
+    {
+        if( this.isValidPath( guidePath ) == false )
+            return;
+
         this.currentGuidePath = guidePath;
 
         let parts = this.currentGuidePath.split( '/' );
+
+        // Cut out hash character from start of string if it's there.
+        if( parts[0][0] == '#' )
+            parts[0] = parts[0].substring( 1 );
 
         if( this.guides[parts[0]][parts[1]].guide === null )
         {
@@ -126,7 +158,7 @@ class MainProject
                     {
                         if( imgui.menuItem( key2 ) )
                         {
-                            this.switchToGuide( key1 + "/" + key2 );
+                            window.location.hash = "#" + key1 + "/" + key2;
 
                             imgui.closeAllMenus();
                             this.framework.refresh();
@@ -195,6 +227,15 @@ class MainProject
     onBeforeUnload()
     {
         this.saveState();
+    }
+
+    onHashChange(newHash)
+    {
+        if( newHash.length <= 1 )
+            newHash = this.defaultPath;
+
+        this.switchToGuide( newHash );
+        this.framework.refresh();
     }
 
     onMouseMove(x, y)
