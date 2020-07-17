@@ -94,7 +94,10 @@ class MainProject
         {
             //if( this.camera )
                 //this.framework.storage["cameraState"] = JSON.stringify( this.camera );
-            this.framework.storage["currentGuidePath"] = this.currentGuidePath;
+
+            let pathWithPage = this.currentGuidePath + "/" + this.currentGuide.page;
+
+            this.framework.storage["currentGuidePath"] = pathWithPage;
         }
     }
 
@@ -126,9 +129,7 @@ class MainProject
         if( this.isValidPath( guidePath ) == false )
             return;
 
-        this.currentGuidePath = guidePath;
-
-        let parts = this.currentGuidePath.split( '/' );
+        let parts = guidePath.split( '/' );
 
         // Cut out hash character from start of string if it's there.
         if( parts[0][0] == '#' )
@@ -140,6 +141,14 @@ class MainProject
         }
 
         this.currentGuide = this.guides[parts[0]][parts[1]].guide;
+
+        let pageIndex = parseInt( parts[2] );
+        if( isNaN( pageIndex ) == false )
+        {
+            this.currentGuide.page = pageIndex;
+        }
+
+        this.currentGuidePath = parts[0] + "/" + parts[1];
     }
 
     update(deltaTime, currentTime)
