@@ -31,7 +31,7 @@ class GuideAngularVelocity extends Guide
         this.currentPosition = new vec2(0);
         this.currentPosition.set( this.startPosition );
 
-        this.page = 1;
+        // Settings.
         this.showDegrees = false;
 
         this.playing = false;
@@ -108,7 +108,8 @@ class GuideAngularVelocity extends Guide
         imgui.window( "Angular Velocity" );
 
         // Add page selector.
-        this.page = this.renderer.addPageSelector( this.framework, this.page, 6 );
+        let numPages = 6;
+        let switchedPage = this.switchPage( this.renderer.addPageSelector( this.framework, this.page, numPages ) );
 
         if( imgui.checkbox( "Degrees", this.showDegrees ) )
         {

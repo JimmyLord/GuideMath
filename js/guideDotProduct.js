@@ -27,7 +27,6 @@ class GuideDotProduct extends Guide
         this.dragging = false;
 
         // Settings.
-        this.page = 1;
         this.showPositions = false;
         
         // Init imgui window positions and sizes.
@@ -77,7 +76,7 @@ class GuideDotProduct extends Guide
 
         // Add page selector.
         let numPages = 3;
-        this.page = this.renderer.addPageSelector( this.framework, this.page, numPages );
+        let switchedPage = this.switchPage( this.renderer.addPageSelector( this.framework, this.page, numPages ) );
 
         //if( imgui.checkbox( "Show positions", this.showPositions ) )
         //{

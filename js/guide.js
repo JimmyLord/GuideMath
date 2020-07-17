@@ -7,6 +7,10 @@ class Guide
         this.mainProject = mainProject;
         this.framework = framework;
 
+        // Page Settings.
+        this.page = 1;
+        this.switchedPage = true;
+
         // Common vars.
         this.mousePosition = new vec2( 0, 0 );
 
@@ -35,6 +39,15 @@ class Guide
         imgui.initWindow( "FullFrame", !force, new vec2(0,0), new vec2(w,h), false, false );
         imgui.initWindow( "Definitions", !force, new vec2(2,imgui.mainMenuBarHeight + 1), new vec2(600,40) );
         imgui.initWindow( guideName, !force, new vec2(2,imgui.mainMenuBarHeight + 1 + 40 + 1), new vec2(205,130) );
+    }
+
+    switchPage(page)
+    {
+        if( this.page == page )
+            return;
+
+        this.page = page;
+        this.switchedPage = true;
     }
 
     update(deltaTime)

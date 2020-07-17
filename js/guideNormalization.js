@@ -26,7 +26,6 @@ class GuideNormalization extends Guide
         this.dragging = false;
 
         // Settings.
-        this.page = 1;
         this.showPositions = false;
         
         // Init imgui window positions and sizes.
@@ -65,7 +64,8 @@ class GuideNormalization extends Guide
         //}
 
         // Add page selector.
-        this.page = this.renderer.addPageSelector( this.framework, this.page, 2 );
+        let numPages = 2;
+        let switchedPage = this.switchPage( this.renderer.addPageSelector( this.framework, this.page, numPages ) );
 
         if( imgui.checkbox( "Show positions", this.showPositions ) )
         {

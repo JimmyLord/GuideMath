@@ -80,8 +80,6 @@ class GuideAcceleration extends Guide
         this.fps = 60;
 
         // Settings.
-        this.page = -1;
-        this.oldPage = null;
         this.showPositions = false;
         
         // Init imgui window positions and sizes.
@@ -171,11 +169,7 @@ class GuideAcceleration extends Guide
 
         // Add page selector.
         let numPages = 5;
-        let switchedPage = false;
-        this.oldPage = this.page;
-        this.page = this.renderer.addPageSelector( this.framework, this.page, numPages );
-        if( this.oldPage != this.page )
-            switchedPage = true;
+        this.switchPage( this.renderer.addPageSelector( this.framework, this.page, numPages ) );
 
         //if( imgui.checkbox( "Show positions", this.showPositions ) )
         //{
@@ -198,7 +192,7 @@ class GuideAcceleration extends Guide
 
         if( this.page == 1 )
         {
-            if( switchedPage )
+            if( this.switchedPage )
             {
                 let oldVel = this.objects[0].vel.x;
                 this.objects[0].set( new vec2( 0,  0.3 ), new vec2( 0.10, 0 ), new vec2( 0, 0 ) );
@@ -231,7 +225,7 @@ class GuideAcceleration extends Guide
 
         if( this.page == 2 )
         {
-            if( switchedPage )
+            if( this.switchedPage )
             {
                 let oldAcc = this.objects[0].acc.x;
                 this.objects[0].set( new vec2( 0,  0.3 ), new vec2( 0, 0 ), new vec2( 0.5, 0 ) );
@@ -265,7 +259,7 @@ class GuideAcceleration extends Guide
 
         if( this.page == 3 )
         {
-            if( switchedPage )
+            if( this.switchedPage )
             {
                 let oldAcc = this.objects[0].acc.x;
                 this.objects[0].set( new vec2( 0,  0.3 ), new vec2( 0, 0 ), new vec2( 0.25, 0 ) );
@@ -483,6 +477,8 @@ class GuideAcceleration extends Guide
         //
         //// End vertex position.
         //this.renderer.drawPoint( new vec3( this.endPosition.x, this.endPosition.y, 0 ), endColor );
+
+        this.switchedPage = false;
     }
 
     onMouseMove(x, y)

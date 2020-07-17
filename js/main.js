@@ -145,7 +145,7 @@ class MainProject
         let pageIndex = parseInt( parts[2] );
         if( isNaN( pageIndex ) == false )
         {
-            this.currentGuide.page = pageIndex;
+            this.currentGuide.switchPage( pageIndex );
         }
 
         this.currentGuidePath = parts[0] + "/" + parts[1];
