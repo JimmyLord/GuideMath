@@ -26,6 +26,9 @@ class GuideDotProduct extends Guide
 
         this.dragging = false;
 
+        // To show the current angle.
+        this.meshAngle = new Mesh( this.framework.gl );
+
         // Settings.
         this.showPositions = false;
         
@@ -141,13 +144,31 @@ class GuideDotProduct extends Guide
         // Projection line.
         this.renderer.drawVector( this.vertex2, projectedPoint, colorProjectionLine );
 
+        // Projected vector.
+        this.renderer.drawVector( this.vertexOrigin, projectedPoint, colorProjectedVector );
+
         // Vertices.
         this.renderer.drawPoint( new vec3( this.vertexOrigin.x, this.vertexOrigin.y, 0 ), colorV1 );
         this.renderer.drawPoint( new vec3( this.vertex1.x, this.vertex1.y, 0 ), colorV1 );
         this.renderer.drawPoint( new vec3( this.vertex2.x, this.vertex2.y, 0 ), colorV2 );
 
-        // Projected vector.
-        this.renderer.drawVector( this.vertexOrigin, projectedPoint, colorProjectedVector );
+        // Draw angle arc.
+        let sideOfLine = (this.vertex1.x - this.vertexOrigin.x) * (this.vertex2.y - this.vertexOrigin.y) - (this.vertex1.y - this.vertexOrigin.y) * (this.vertex2.x - this.vertexOrigin.x);
+        if( sideOfLine < 0 ) sideOfLine = -1; else sideOfLine = 1;
+        let numVerts = Math.round( thetaRadians * 20 );
+        let radius = 0.3;
+        let startAngle = Math.atan2( v1.y, v1.x );
+        this.meshAngle.startShape( this.framework.gl.LINE_STRIP, numVerts+1 );
+        let position = new vec3(this.vertexOrigin.x + Math.cos(startAngle)*radius, this.vertexOrigin.y + Math.sin(startAngle)*radius, 0);
+        this.meshAngle.addVertex( position, new vec2(0,0), new vec3(0,0,-1), new color(255,255,255,255) );
+        for( let i=0; i<numVerts; i++ )
+        {
+            let angle = startAngle + (thetaRadians / numVerts) * (i+1) * sideOfLine;
+            let position = new vec3(this.vertexOrigin.x + Math.cos(angle)*radius, this.vertexOrigin.y + Math.sin(angle)*radius, 0);
+            this.meshAngle.addVertex( position, new vec2(0,0), new vec3(0,0,-1), new color(255,255,255,255) );
+        }
+        this.meshAngle.endShape();
+        this.renderer.drawMesh( this.meshAngle, new vec3( 0, 0, 0 ), this.framework.resources.materials["green"] );
 
         // Hypotenuse normalized.
         //this.renderer.drawVector( this.vertexOrigin, this.vertexOrigin.plus( this.vertex1.minus( this.vertexOrigin ).getNormalized() ), normalizedColor );
