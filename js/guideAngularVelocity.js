@@ -17,7 +17,8 @@ class GuideAngularVelocity extends Guide
 {
     constructor(mainProject, framework)
     {
-        super( mainProject, framework );
+        let numPages = 6;
+        super( mainProject, framework, numPages );
 
         this.vertexRadius = 0.5;
         
@@ -108,8 +109,7 @@ class GuideAngularVelocity extends Guide
         imgui.window( "Angular Velocity" );
 
         // Add page selector.
-        let numPages = 6;
-        let switchedPage = this.switchPage( this.renderer.addPageSelector( this.framework, this.page, numPages ) );
+        let switchedPage = this.switchPage( this.renderer.addPageSelector( this.framework, this.page, this.numPages ) );
 
         if( imgui.checkbox( "Degrees", this.showDegrees ) )
         {

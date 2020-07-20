@@ -17,7 +17,8 @@ class GuideNormalization extends Guide
 {
     constructor(mainProject, framework)
     {
-        super( mainProject, framework );
+        let numPages = 2;
+        super( mainProject, framework, numPages );
 
         this.vertexOrigin = new vec2( 0, 0 );
         this.vertex1 = new vec2( 1.5, 0.5 );
@@ -64,8 +65,7 @@ class GuideNormalization extends Guide
         //}
 
         // Add page selector.
-        let numPages = 2;
-        let switchedPage = this.switchPage( this.renderer.addPageSelector( this.framework, this.page, numPages ) );
+        let switchedPage = this.switchPage( this.renderer.addPageSelector( this.framework, this.page, this.numPages ) );
 
         if( imgui.checkbox( "Show positions", this.showPositions ) )
         {

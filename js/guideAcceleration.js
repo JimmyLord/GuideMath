@@ -52,7 +52,8 @@ class GuideAcceleration extends Guide
 {
     constructor(mainProject, framework)
     {
-        super( mainProject, framework );
+        let numPages = 5;
+        super( mainProject, framework, numPages );
 
         this.vertexRadius = 0.5;
 
@@ -168,8 +169,7 @@ class GuideAcceleration extends Guide
         //}
 
         // Add page selector.
-        let numPages = 5;
-        this.switchPage( this.renderer.addPageSelector( this.framework, this.page, numPages ) );
+        this.switchPage( this.renderer.addPageSelector( this.framework, this.page, this.numPages ) );
 
         //if( imgui.checkbox( "Show positions", this.showPositions ) )
         //{

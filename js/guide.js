@@ -2,13 +2,14 @@ var MasterGuideList = {};
 
 class Guide
 {
-    constructor(mainProject, framework)
+    constructor(mainProject, framework, numPages)
     {
         this.mainProject = mainProject;
         this.framework = framework;
 
         // Page Settings.
         this.page = 1;
+        this.numPages = numPages;
         this.switchedPage = true;
 
         // Common vars.
@@ -43,8 +44,12 @@ class Guide
 
     switchPage(page)
     {
-        if( this.page == page )
+        if( this.page == page ||
+            page < 1 ||
+            page > this.numPages )
+        {
             return;
+        }
 
         this.page = page;
         this.switchedPage = true;
@@ -85,7 +90,19 @@ class Guide
         this.camera.onMouseWheel( direction );
     }
 
-    onKeyDown(keyCode)
+    onKeyDown(key, keyCode, modifierKeys)
     {
+        if( modifierKeys == modifierKeyFlag.ctrl )
+        {
+            if( key == 'ArrowLeft' )
+            {
+                this.switchPage( this.page-1 );
+            }
+
+            if( key == 'ArrowRight' )
+            {
+                this.switchPage( this.page+1 );
+            }
+        }
     }
 }

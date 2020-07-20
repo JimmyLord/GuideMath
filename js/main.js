@@ -142,7 +142,7 @@ class MainProject
 
         this.currentGuide = this.guides[parts[0]][parts[1]].guide;
 
-        let pageIndex = parseInt( parts[2] );
+        let pageIndex = parseInt( parts[2], 10 );
         if( isNaN( pageIndex ) == false )
         {
             this.currentGuide.switchPage( pageIndex );
@@ -275,18 +275,18 @@ class MainProject
         this.framework.refresh();
     }
 
-    onKeyDown(keyCode)
+    onKeyDown(key, keyCode, modifierKeyStates)
     {
         if( this.currentGuide.onKeyDown )
-            this.currentGuide.onKeyDown( keyCode );
+            this.currentGuide.onKeyDown( key, keyCode, modifierKeyStates );
 
         this.framework.refresh();
     }
 
-    onKeyUp(keyCode)
+    onKeyUp(key, keyCode, modifierKeyStates)
     {
         if( this.currentGuide.onKeyUp )
-            this.currentGuide.onKeyUp( keyCode );
+            this.currentGuide.onKeyUp( key, keyCode, modifierKeyStates );
 
         this.framework.refresh();
     }
