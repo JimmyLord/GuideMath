@@ -17,7 +17,7 @@ class GuideDotProduct extends Guide
 {
     constructor(mainProject, framework)
     {
-        let numPages = 3;
+        let numPages = 4;
         super( mainProject, framework, numPages );
 
         this.vertexOrigin = new vec2( 0, 0 );
@@ -32,6 +32,7 @@ class GuideDotProduct extends Guide
 
         // Settings.
         this.showPositions = false;
+        this.normalizeVector1 = true;
         
         // Init imgui window positions and sizes.
         this.initWindows( false );
@@ -86,12 +87,17 @@ class GuideDotProduct extends Guide
         //    this.showPositions = !this.showPositions;
         //}
 
+        let showProjection = false;
+        let showAngle = false;
+
         if( this.page == 1 )
         {
             imgui.window( "Definitions" );
             imgui.text( "The dot product of 2 vectors describes the relationship between those 2 vectors");
             imgui.text( "as follows: dotProduct = ||A|| * ||B|| * cos(θ)");
             imgui.window( "Dot Product" );
+
+            showAngle = true;
         }
 
         if( this.page == 2 )
@@ -100,6 +106,8 @@ class GuideDotProduct extends Guide
             imgui.text( "dotProduct = ||A|| * ||B|| * cos(θ)");
             imgui.text( "reordered: cos(θ) = dotProduct / (||A|| * ||B||)");
             imgui.window( "Dot Product" );
+
+            showAngle = true;
         }
 
         if( this.page == 3 )
@@ -108,16 +116,47 @@ class GuideDotProduct extends Guide
             imgui.text( "The dot product can be calculated easily:");
             imgui.text( "dotProduct = v1.x*v2.x + v1.y*v2.y");
             imgui.window( "Dot Product" );
+
+            showAngle = true;
         }
 
-        imgui.text( "A:   " + this.vertex1.x.toFixed(decimals) + ", " + this.vertex1.y.toFixed(decimals) );
-        imgui.text( "B:   " + this.vertex2.x.toFixed(decimals) + ", " + this.vertex2.y.toFixed(decimals) );
-        imgui.text( "Magnitude of A: " + len1.toFixed(decimals) );
-        imgui.text( "Magnitude of B: " + len2.toFixed(decimals) );
-        imgui.text( "dot:    " + dotProduct.toFixed(decimals) );
-        imgui.text( "cos(θ): " + cosTheta.toFixed(decimals) );
-        imgui.text( "θ:      " + thetaRadians.toFixed(decimals) + " radians" );
-        imgui.text( "θ:      " + thetaDegrees.toFixed(decimals) + " degrees" );
+        if( this.page == 4 )
+        {
+            imgui.window( "Definitions" );
+            //imgui.text( "Another property of the dot product is the following:");
+            imgui.text( "The dot product of a vector with a unit vector will give the projected length");
+            imgui.text( "   of the vector along the axis of the unit vector.");
+            imgui.window( "Dot Product" );
+
+            showProjection = true;
+        }
+
+        if( showAngle )
+        {
+            imgui.text( "A:   " + this.vertex1.x.toFixed(decimals) + ", " + this.vertex1.y.toFixed(decimals) );
+            imgui.text( "B:   " + this.vertex2.x.toFixed(decimals) + ", " + this.vertex2.y.toFixed(decimals) );
+            imgui.text( "Magnitude of A: " + len1.toFixed(decimals) );
+            imgui.text( "Magnitude of B: " + len2.toFixed(decimals) );
+            imgui.text( "dot:    " + dotProduct.toFixed(decimals) );
+            imgui.text( "cos(θ): " + cosTheta.toFixed(decimals) );
+            imgui.text( "θ:      " + thetaRadians.toFixed(decimals) + " radians" );
+            imgui.text( "θ:      " + thetaDegrees.toFixed(decimals) + " degrees" );
+        }
+
+        if( showProjection )
+        {            
+            if( imgui.checkbox( "Keep blue vector normalized", this.normalizeVector1 ) )
+                this.normalizeVector1 = !this.normalizeVector1;
+
+            if( this.normalizeVector1 ) 
+                this.vertex1.normalize();
+
+            imgui.text( "A:   " + this.vertex1.x.toFixed(decimals) + ", " + this.vertex1.y.toFixed(decimals) );
+            imgui.text( "B:   " + this.vertex2.x.toFixed(decimals) + ", " + this.vertex2.y.toFixed(decimals) );
+            imgui.text( "Magnitude of A: " + len1.toFixed(decimals) );
+            imgui.text( "Magnitude of B: " + len2.toFixed(decimals) );
+            imgui.text( "dot:    " + dotProduct.toFixed(decimals) );
+        }
 
         // Grid.
         if( this.mainProject.showGrid )
@@ -141,34 +180,40 @@ class GuideDotProduct extends Guide
         this.renderer.drawVector( this.vertexOrigin, this.vertex1, colorV1 );
         this.renderer.drawVector( this.vertexOrigin, this.vertex2, colorV2 );
 
-        // Projection line.
-        this.renderer.drawVector( this.vertex2, projectedPoint, colorProjectionLine );
+        if( showProjection )
+        {
+            // Projection line.
+            this.renderer.drawVector( this.vertex2, projectedPoint, colorProjectionLine );
 
-        // Projected vector.
-        this.renderer.drawVector( this.vertexOrigin, projectedPoint, colorProjectedVector );
+            // Projected vector.
+            this.renderer.drawVector( this.vertexOrigin, projectedPoint, colorProjectedVector );
+        }
 
         // Vertices.
         this.renderer.drawPoint( new vec3( this.vertexOrigin.x, this.vertexOrigin.y, 0 ), colorV1 );
         this.renderer.drawPoint( new vec3( this.vertex1.x, this.vertex1.y, 0 ), colorV1 );
         this.renderer.drawPoint( new vec3( this.vertex2.x, this.vertex2.y, 0 ), colorV2 );
 
-        // Draw angle arc.
-        let sideOfLine = (this.vertex1.x - this.vertexOrigin.x) * (this.vertex2.y - this.vertexOrigin.y) - (this.vertex1.y - this.vertexOrigin.y) * (this.vertex2.x - this.vertexOrigin.x);
-        if( sideOfLine < 0 ) sideOfLine = -1; else sideOfLine = 1;
-        let numVerts = Math.round( thetaRadians * 20 );
-        let radius = 0.3;
-        let startAngle = Math.atan2( v1.y, v1.x );
-        this.meshAngle.startShape( this.framework.gl.LINE_STRIP, numVerts+1 );
-        let position = new vec3(this.vertexOrigin.x + Math.cos(startAngle)*radius, this.vertexOrigin.y + Math.sin(startAngle)*radius, 0);
-        this.meshAngle.addVertex( position, new vec2(0,0), new vec3(0,0,-1), new color(255,255,255,255) );
-        for( let i=0; i<numVerts; i++ )
+        if( showAngle )
         {
-            let angle = startAngle + (thetaRadians / numVerts) * (i+1) * sideOfLine;
-            let position = new vec3(this.vertexOrigin.x + Math.cos(angle)*radius, this.vertexOrigin.y + Math.sin(angle)*radius, 0);
+            // Draw angle arc.
+            let sideOfLine = (this.vertex1.x - this.vertexOrigin.x) * (this.vertex2.y - this.vertexOrigin.y) - (this.vertex1.y - this.vertexOrigin.y) * (this.vertex2.x - this.vertexOrigin.x);
+            if( sideOfLine < 0 ) sideOfLine = -1; else sideOfLine = 1;
+            let numVerts = Math.round( thetaRadians * 20 );
+            let radius = 0.3;
+            let startAngle = Math.atan2( v1.y, v1.x );
+            this.meshAngle.startShape( this.framework.gl.LINE_STRIP, numVerts+1 );
+            let position = new vec3(this.vertexOrigin.x + Math.cos(startAngle)*radius, this.vertexOrigin.y + Math.sin(startAngle)*radius, 0);
             this.meshAngle.addVertex( position, new vec2(0,0), new vec3(0,0,-1), new color(255,255,255,255) );
+            for( let i=0; i<numVerts; i++ )
+            {
+                let angle = startAngle + (thetaRadians / numVerts) * (i+1) * sideOfLine;
+                let position = new vec3(this.vertexOrigin.x + Math.cos(angle)*radius, this.vertexOrigin.y + Math.sin(angle)*radius, 0);
+                this.meshAngle.addVertex( position, new vec2(0,0), new vec3(0,0,-1), new color(255,255,255,255) );
+            }
+            this.meshAngle.endShape();
+            this.renderer.drawMesh( this.meshAngle, new vec3( 0, 0, 0 ), this.framework.resources.materials["green"] );
         }
-        this.meshAngle.endShape();
-        this.renderer.drawMesh( this.meshAngle, new vec3( 0, 0, 0 ), this.framework.resources.materials["green"] );
 
         // Hypotenuse normalized.
         //this.renderer.drawVector( this.vertexOrigin, this.vertexOrigin.plus( this.vertex1.minus( this.vertexOrigin ).getNormalized() ), normalizedColor );
