@@ -221,7 +221,7 @@ class GuideDotProduct extends Guide
 
     onMouseMove(x, y)
     {
-        let [worldX, worldY] = super.onMouseMove( x, y );
+        let worldPos = super.onMouseMove( x, y );
 
         if( this.framework.imgui.isHoveringWindow )
             return;
@@ -234,30 +234,30 @@ class GuideDotProduct extends Guide
 
     onMouseDown(buttonID, x, y)
     {
-        let [worldX, worldY] = super.onMouseDown( buttonID, x, y );
+        let worldPos = super.onMouseDown( buttonID, x, y );
 
         if( this.framework.imgui.isHoveringWindow )
             return;
 
         if( buttonID == 0 )
         {
-            //this.vertexOrigin.setF32( worldX, worldY );
-            if( this.vertex1.distanceFrom( new vec2( worldX, worldY ) ) < 0.15 )
+            //this.vertexOrigin.setF32( worldPos.x, worldPos.y );
+            if( this.vertex1.distanceFrom( new vec2( worldPos.x, worldPos.y ) ) < 0.15 )
             {
                 this.vertexMoving = this.vertex1;
             }
-            if( this.vertex2.distanceFrom( new vec2( worldX, worldY ) ) < 0.15 )
+            if( this.vertex2.distanceFrom( new vec2( worldPos.x, worldPos.y ) ) < 0.15 )
             {
                 this.vertexMoving = this.vertex2;
             }
-            else if( this.vertexOrigin.distanceFrom( new vec2( worldX, worldY ) ) < 0.15 )
+            else if( this.vertexOrigin.distanceFrom( new vec2( worldPos.x, worldPos.y ) ) < 0.15 )
             {
                 this.vertexMoving = this.vertexOrigin;
             }
 
             if( this.vertexMoving != null )
             {
-                this.vertexMoving.setF32( worldX, worldY );
+                this.vertexMoving.setF32( worldPos.x, worldPos.y );
                 this.dragging = true;
             }
         }
@@ -265,14 +265,14 @@ class GuideDotProduct extends Guide
 
     onMouseUp(buttonID, x, y)
     {
-        let [worldX, worldY] = super.onMouseUp( buttonID, x, y );
+        let worldPos = super.onMouseUp( buttonID, x, y );
 
         if( this.framework.imgui.isHoveringWindow )
             return;
 
-        if( buttonID == 0 && this.dragging == true )
+        if( buttonID === 0 && this.dragging === true )
         {
-            this.vertexMoving.setF32( worldX, worldY );
+            this.vertexMoving.setF32( worldPos.x, worldPos.y );
             this.vertexMoving = null;
             this.dragging = false;
         }

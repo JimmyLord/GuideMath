@@ -62,8 +62,8 @@ class RenderHelpers
         let strW = str.length * 8;
         let strH = 14;
 
-        [x,y] = this.camera.convertWorldToScreen( this.framework.canvas, x, y );
-        imgui.activeWindow.cursor.setF32( x, y );
+        let screenPos = this.camera.convertWorldToScreen( this.framework.canvas, x, y );
+        imgui.activeWindow.cursor.setF32( screenPos.x, screenPos.y );
         imgui.activeWindow.cursor.divideBy( this.framework.imgui.scale );
         imgui.activeWindow.cursor.x += alignX * strW;
         imgui.activeWindow.cursor.y += alignY * strH;

@@ -16,7 +16,7 @@ class Guide
         this.mousePosition = new vec2( 0, 0 );
 
         // Create a camera.
-        this.camera = new Camera( new vec3(0, 0, -3), true, 3, this.framework.canvas.width / this.framework.canvas.height );
+        this.camera = new Camera( new vec3(0, 0, -3), true, 3, this.framework );
 
         this.renderer = new RenderHelpers( this.framework, this.camera );
     }
@@ -63,26 +63,26 @@ class Guide
     onMouseMove(x, y)
     {
         this.camera.onMouseMove( x, y );
-        let [worldX, worldY] = this.camera.convertScreenToWorld( this.framework.canvas, x, y );
+        let worldPos = this.camera.convertScreenToWorld( this.framework.canvas, x, y );
 
         // Store mouse position in world space.
-        this.mousePosition.setF32( worldX, worldY );
+        this.mousePosition.setF32( worldPos.x, worldPos.y );
 
-        return [worldX, worldY];
+        return worldPos;
     }
 
     onMouseDown(buttonID, x, y)
     {
         this.camera.onMouseDown( buttonID, x, y );
-        let [worldX, worldY] = this.camera.convertScreenToWorld( this.framework.canvas, x, y );
-        return [worldX, worldY];
+        let worldPos = this.camera.convertScreenToWorld( this.framework.canvas, x, y );
+        return worldPos;
     }
 
     onMouseUp(buttonID, x, y)
     {
         this.camera.onMouseUp( buttonID, x, y );
-        let [worldX, worldY] = this.camera.convertScreenToWorld( this.framework.canvas, x, y );
-        return [worldX, worldY];
+        let worldPos = this.camera.convertScreenToWorld( this.framework.canvas, x, y );
+        return worldPos;
     }
 
     onMouseWheel(direction)

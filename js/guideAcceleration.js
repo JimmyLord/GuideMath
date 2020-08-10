@@ -483,7 +483,7 @@ class GuideAcceleration extends Guide
 
     onMouseMove(x, y)
     {
-        let [orthoX, orthoY] = super.onMouseMove( x, y );
+        let orthoPos = super.onMouseMove( x, y );
 
         if( this.framework.imgui.isHoveringWindow )
             return;
@@ -496,29 +496,29 @@ class GuideAcceleration extends Guide
 
     onMouseDown(buttonID, x, y)
     {
-        let [orthoX, orthoY] = super.onMouseDown( buttonID, x, y );
+        let orthoPos = super.onMouseDown( buttonID, x, y );
 
         if( this.framework.imgui.isHoveringWindow )
             return;
 
-        if( buttonID == 0 )
+        if( buttonID === 0 )
         {
-            this.startPosition.setF32( orthoX, orthoY );
-            this.endPosition.setF32( orthoX, orthoY );
+            this.startPosition.setF32( orthoPos.x, orthoPos.y );
+            this.endPosition.setF32( orthoPos.x, orthoPos.y );
             this.dragging = true;
         }
     }
 
     onMouseUp(buttonID, x, y)
     {
-        let [orthoX, orthoY] = super.onMouseUp( buttonID, x, y );
+        let orthoPos = super.onMouseUp( buttonID, x, y );
 
         if( this.framework.imgui.isHoveringWindow )
             return;
 
-        if( buttonID == 0 && this.dragging == true )
+        if( buttonID === 0 && this.dragging === true )
         {
-            this.endPosition.setF32( orthoX, orthoY );
+            this.endPosition.setF32( orthoPos.x, orthoPos.y );
             this.dragging = false;
         }
     }
