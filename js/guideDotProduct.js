@@ -28,7 +28,9 @@ class GuideDotProduct extends Guide
         this.dragging = false;
 
         // To show the current angle.
-        this.meshAngle = new Mesh( this.framework.gl );
+        this.meshAngle = new MeshDynamic( this.framework.gl );
+        this.numVerts = 90; //Math.round( thetaRadians * 20 );
+        this.meshAngle.startShape( this.framework.gl.LINE_STRIP, this.numVerts+1 );
 
         // Settings.
         this.showPositions = false;
@@ -57,8 +59,10 @@ class GuideDotProduct extends Guide
         let decimals = 2;
 
         // Calculate some values.
-        let v1 = this.vertex1.minus( this.vertexOrigin );
-        let v2 = this.vertex2.minus( this.vertexOrigin );
+        let v1 = new vec2();
+        v1.set( this.vertex1.minus( this.vertexOrigin ) );
+        let v2 = new vec2();
+        v2.set( this.vertex2.minus( this.vertexOrigin ) );
         let dotProduct = v1.dot( v2 );
         let len1 = v1.length();
         let len2 = v2.length();
@@ -90,7 +94,7 @@ class GuideDotProduct extends Guide
         let showProjection = false;
         let showAngle = false;
 
-        if( this.page == 1 )
+        if( this.page === 1 )
         {
             imgui.window( "Definitions" );
             imgui.text( "The dot product of 2 vectors describes the relationship between those 2 vectors");
@@ -100,7 +104,7 @@ class GuideDotProduct extends Guide
             showAngle = true;
         }
 
-        if( this.page == 2 )
+        if( this.page === 2 )
         {
             imgui.window( "Definitions" );
             imgui.text( "dotProduct = ||A|| * ||B|| * cos(θ)");
@@ -110,7 +114,7 @@ class GuideDotProduct extends Guide
             showAngle = true;
         }
 
-        if( this.page == 3 )
+        if( this.page === 3 )
         {
             imgui.window( "Definitions" );
             imgui.text( "The dot product can be calculated easily:");
@@ -120,7 +124,7 @@ class GuideDotProduct extends Guide
             showAngle = true;
         }
 
-        if( this.page == 4 )
+        if( this.page === 4 )
         {
             imgui.window( "Definitions" );
             //imgui.text( "Another property of the dot product is the following:");
@@ -199,17 +203,17 @@ class GuideDotProduct extends Guide
             // Draw angle arc.
             let sideOfLine = (this.vertex1.x - this.vertexOrigin.x) * (this.vertex2.y - this.vertexOrigin.y) - (this.vertex1.y - this.vertexOrigin.y) * (this.vertex2.x - this.vertexOrigin.x);
             if( sideOfLine < 0 ) sideOfLine = -1; else sideOfLine = 1;
-            let numVerts = Math.round( thetaRadians * 20 );
             let radius = 0.3;
+            debugger;
             let startAngle = Math.atan2( v1.y, v1.x );
-            this.meshAngle.startShape( this.framework.gl.LINE_STRIP, numVerts+1 );
-            let position = new vec3(this.vertexOrigin.x + Math.cos(startAngle)*radius, this.vertexOrigin.y + Math.sin(startAngle)*radius, 0);
-            this.meshAngle.addVertex( position, new vec2(0,0), new vec3(0,0,-1), new color(255,255,255,255) );
-            for( let i=0; i<numVerts; i++ )
+            this.meshAngle.removeAllVerts();
+            let position = vec3.getTemp( this.vertexOrigin.x + Math.cos(startAngle)*radius, this.vertexOrigin.y + Math.sin(startAngle)*radius, 0 );
+            this.meshAngle.addVertexF( position.x, position.y, position.z,   0,0,   0,0,-1,   255,255,255,255 );
+            for( let i=0; i<this.numVerts; i++ )
             {
-                let angle = startAngle + (thetaRadians / numVerts) * (i+1) * sideOfLine;
+                let angle = startAngle + (thetaRadians / this.numVerts) * (i+1) * sideOfLine;
                 let position = new vec3(this.vertexOrigin.x + Math.cos(angle)*radius, this.vertexOrigin.y + Math.sin(angle)*radius, 0);
-                this.meshAngle.addVertex( position, new vec2(0,0), new vec3(0,0,-1), new color(255,255,255,255) );
+                this.meshAngle.addVertexF( position.x, position.y, position.z,   0,0,   0,0,-1,   255,255,255,255 );
             }
             this.meshAngle.endShape();
             this.renderer.drawMesh( this.meshAngle, new vec3( 0, 0, 0 ), this.framework.resources.materials["green"] );

@@ -81,13 +81,15 @@ class GuideAngularVelocity extends Guide
         let decimals = 2;
 
         // Calculate some values.
-        let startPos = this.startPosition.minus( this.centerPosition );
+        let startPos = new vec2();
+        startPos.set( this.startPosition.minus( this.centerPosition ) );
         startPos.normalize();
         startPos.multiplyBy( this.radius );
         let startRadians = Math.atan2( startPos.y, startPos.x );
         if( startRadians < 0 ) startRadians += Math.PI * 2;
 
-        let endPos = this.endPosition.minus( this.centerPosition );
+        let endPos = new vec2();
+        endPos.set( this.endPosition.minus( this.centerPosition ) );
         endPos.normalize();
         endPos.multiplyBy( this.radius );
         let endRadians = Math.atan2( endPos.y, endPos.x );
@@ -96,7 +98,8 @@ class GuideAngularVelocity extends Guide
         let angleDiff = endRadians - startRadians;
         if( angleDiff < 0 ) angleDiff += Math.PI * 2;
 
-        let currentPos = this.currentPosition.minus( this.centerPosition );
+        let currentPos = new vec2();
+        currentPos.set( this.currentPosition.minus( this.centerPosition ) );
         currentPos.normalize();
         currentPos.multiplyBy( this.radius );
         let currentRadians = Math.atan2( currentPos.y, currentPos.x );

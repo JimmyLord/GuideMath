@@ -59,7 +59,7 @@ class MainProject
         resources.meshes["vertex"] = new Mesh( this.framework.gl );
         resources.meshes["vertex"].createCircle( 200, 0.04 );
         resources.meshes["edge"] = new Mesh( this.framework.gl );
-        resources.meshes["edge"].createBox( new vec2( 1, 0.02 ) );
+        resources.meshes["edge"].createBox( 1, 0.02 );
         resources.meshes["circle"] = new Mesh( this.framework.gl );
         resources.meshes["circle"].createCircle( 200, 1.0, true );
 
