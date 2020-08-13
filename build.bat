@@ -4,6 +4,7 @@ copy index-min.html build\index.html
 
 java -jar closure.jar ^
 --compilation_level ADVANCED_OPTIMIZATIONS ^
+--js framework\js\datatypes\pool.js ^
 --js framework\js\datatypes\color.js ^
 --js framework\js\datatypes\vector.js ^
 --js framework\js\datatypes\matrix.js ^
@@ -25,6 +26,7 @@ java -jar closure.jar ^
 --js js\guideNormalization.js ^
 --js js\guideAcceleration.js ^
 --js js\guideAngularVelocity.js ^
+--js js\guideCollisionSAT.js ^
 --js js\main.js ^
 --js_output_file build\guides.js
 

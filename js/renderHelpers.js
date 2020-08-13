@@ -107,12 +107,12 @@ class RenderHelpers
         }
     }
 
-    drawMesh(mesh, pos, color)
+    drawMesh(mesh, position, material)
     {
         let matWorld = new mat4;
 
-        matWorld.createSRT( new vec3(1), new vec3(0), new vec3(pos.x, pos.y, 0) );
-        mesh.draw( this.camera, matWorld, color );
+        matWorld.createSRT( vec3.getTemp(1,1,1), vec3.getTemp(0,0,0), vec3.getTemp(position.x, position.y, 0) );
+        mesh.draw( this.camera, matWorld, material );
     }
 
     drawPoint(pos, color)

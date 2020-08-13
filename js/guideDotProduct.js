@@ -243,7 +243,7 @@ class GuideDotProduct extends Guide
         if( this.framework.imgui.isHoveringWindow )
             return;
 
-        if( buttonID == 0 )
+        if( buttonID === 0 )
         {
             //this.vertexOrigin.setF32( worldPos.x, worldPos.y );
             if( this.vertex1.distanceFrom( new vec2( worldPos.x, worldPos.y ) ) < 0.15 )

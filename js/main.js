@@ -76,7 +76,7 @@ class MainProject
 
     loadState()
     {
-        if( this.framework.storage != null )
+        if( this.framework.storage !== null )
         {
             //this.camera.fromJSON( this.framework.storage["cameraState"] );
             let key = this.framework.storage["currentGuidePath"];
@@ -90,7 +90,7 @@ class MainProject
 
     saveState()
     {
-        if( this.framework.storage != null )
+        if( this.framework.storage !== null )
         {
             //if( this.camera )
                 //this.framework.storage["cameraState"] = JSON.stringify( this.camera );
@@ -109,7 +109,7 @@ class MainProject
         let parts = guidePath.split( '/' );
 
         // Cut out hash character from start of string if it's there.
-        if( parts[0][0] == '#' )
+        if( parts[0][0] === '#' )
             parts[0] = parts[0].substring( 1 );
 
         if( parts.length < 2 )
@@ -126,13 +126,13 @@ class MainProject
 
     switchToGuide(guidePath)
     {
-        if( this.isValidPath( guidePath ) == false )
+        if( this.isValidPath( guidePath ) === false )
             return;
 
         let parts = guidePath.split( '/' );
 
         // Cut out hash character from start of string if it's there.
-        if( parts[0][0] == '#' )
+        if( parts[0][0] === '#' )
             parts[0] = parts[0].substring( 1 );
 
         if( this.guides[parts[0]][parts[1]].guide === null )
@@ -143,7 +143,7 @@ class MainProject
         this.currentGuide = this.guides[parts[0]][parts[1]].guide;
 
         let pageIndex = parseInt( parts[2], 10 );
-        if( isNaN( pageIndex ) == false )
+        if( isNaN( pageIndex ) === false )
         {
             this.currentGuide.switchPage( pageIndex );
         }
@@ -243,7 +243,8 @@ class MainProject
         if( newHash.length <= 1 )
             newHash = this.defaultPath;
 
-        this.switchToGuide( newHash );
+        let decodedHash = decodeURI( newHash );
+        this.switchToGuide( decodedHash );
         this.framework.refresh();
     }
 
