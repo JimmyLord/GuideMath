@@ -88,7 +88,8 @@ class GuideCollisionSAT extends Guide
             imgui.text( "This is achieved by projecting the shapes onto multiple axes.");
             imgui.window( "Separating Axis Theorem" );
 
-            [this.currentAxis] = imgui.dragNumber( "Axis", this.currentAxis, 1, 0, 0, this.mesh[0].edgeList.length-1 );
+            let totalEdges = this.mesh[0].edgeList.length + this.mesh[1].edgeList.length;
+            [this.currentAxis] = imgui.dragNumber( "Axis", this.currentAxis, 1, 0, 0, totalEdges-1 );
         }
 
         if( this.page === 2 )
@@ -148,23 +149,28 @@ class GuideCollisionSAT extends Guide
         // Extend and offset the edge away from the shape for visuals.
         let v1 = vec3.getTemp();
         let v2 = vec3.getTemp();
-        this.mesh[0].getVertexPositionsAtEdge( this.currentAxis, v1, v2 );
+        let currentAxis = this.currentAxis;
+        let currentMesh = 0;
+        if( this.currentAxis >= this.mesh[0].edgeList.length )
+        {
+            currentAxis = this.currentAxis - this.mesh[0].edgeList.length;
+            currentMesh = 1;
+        }
         
+        this.mesh[currentMesh].getVertexPositionsAtEdge( currentAxis, v1, v2 );
+        v1.add( this.pos[currentMesh] );
+        v2.add( this.pos[currentMesh] );
+
         let dir = v2.minus( v1 );
         dir.normalize();
         v1.subtract( dir.times( 0.5 ) );
         dir.multiplyBy( 1.5 );
         v2 = v1.plus( dir );
-        if( v1.x === v2.x )
-        {
-            v1.x = -0.5;
-            v2.x = -0.5;
-        }
-        if( v1.y === v2.y )
-        {
-            v1.y = -0.5;
-            v2.y = -0.5;
-        }
+        let normal = vec2.getTemp( -dir.y, dir.x );
+        v1.x += normal.x * 0.25;
+        v1.y += normal.y * 0.25;
+        v2.x += normal.x * 0.25;
+        v2.y += normal.y * 0.25;
 
         let axisStart = vec2.getTemp( v1.x, v1.y );
         let axisEnd = vec2.getTemp( v2.x, v2.y );
