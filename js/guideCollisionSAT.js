@@ -25,12 +25,12 @@ class GuideCollisionSAT extends Guide
         this.color = new Array(2);
 
         this.mesh[0] = new Mesh( this.framework.gl );
-        this.mesh[0].createBox( 0.5, 0.5 );
+        this.mesh[0].createBox( 0.5, 0.5, true );
         this.pos[0] = new vec2( 0, 0 );
         this.color[0] = this.framework.resources.materials["green"];
 
         this.mesh[1] = new Mesh( this.framework.gl );
-        this.mesh[1].createBox( 0.5, 0.5 );
+        this.mesh[1].createBox( 0.8, 0.3, true );
         this.pos[1] = new vec2( 0.8, 0.3 );
         this.color[1] = this.framework.resources.materials["blue"];
 
@@ -88,9 +88,7 @@ class GuideCollisionSAT extends Guide
             imgui.text( "This is achieved by projecting the shapes onto multiple axes.");
             imgui.window( "Separating Axis Theorem" );
 
-            //this.currentAxis
-            [this.currentAxis] = imgui.dragNumber( "Axis", this.currentAxis, 1, 0, 0, 1 );
-            //imgui.text( "Overlap" );
+            [this.currentAxis] = imgui.dragNumber( "Axis", this.currentAxis, 1, 0, 0, this.mesh[0].edgeList.length-1 );
         }
 
         if( this.page === 2 )
@@ -146,32 +144,42 @@ class GuideCollisionSAT extends Guide
         this.renderer.drawMesh( this.mesh[0], this.pos[0], this.color[0] );
         this.renderer.drawMesh( this.mesh[1], this.pos[1], this.color[1] );
         
-        // TODO: Base these axes on the verts in the mesh.
-        let axisStart = vec2.getTemp( -1, -0.5, 0 );
-        let axisEnd = vec2.getTemp( 1.5, -0.5, 0 );
-
-        if( this.currentAxis === 1 )
+        // Grab the edge from the mesh.
+        // Extend and offset the edge away from the shape for visuals.
+        let v1 = vec3.getTemp();
+        let v2 = vec3.getTemp();
+        this.mesh[0].getVertexPositionsAtEdge( this.currentAxis, v1, v2 );
+        
+        let dir = v2.minus( v1 );
+        dir.normalize();
+        v1.subtract( dir.times( 0.5 ) );
+        dir.multiplyBy( 1.5 );
+        v2 = v1.plus( dir );
+        if( v1.x === v2.x )
         {
-            axisStart.setF32( -1, -0.5, 0 );
-            axisEnd.setF32( -1, 1.0, 0 );
+            v1.x = -0.5;
+            v2.x = -0.5;
         }
+        if( v1.y === v2.y )
+        {
+            v1.y = -0.5;
+            v2.y = -0.5;
+        }
+
+        let axisStart = vec2.getTemp( v1.x, v1.y );
+        let axisEnd = vec2.getTemp( v2.x, v2.y );
 
         let axisDirection = axisEnd.minus( axisStart );
         axisDirection.normalize();
         this.renderer.drawVector( axisStart, axisEnd, axisColor );
         
-        // TODO: Grab the verts from the mesh.
+        // Grab the vertex positions from the mesh and project them onto the chosen axis.
         for( let m=0; m<2; m++ )
         {
             for( let i=0; i<4; i++ )
             {
-                let relativePoint = this.pos[m].plus( new vec2( -0.25, -0.25 ) ).minus( axisStart ); // bl point in shape.
-                if( i === 1 )
-                    relativePoint = this.pos[m].plus( new vec2( -0.25,  0.25 ) ).minus( axisStart ); // tl point in shape.
-                if( i === 2 )
-                    relativePoint = this.pos[m].plus( new vec2(  0.25,  0.25 ) ).minus( axisStart ); // tr point in shape.
-                if( i === 3 )
-                    relativePoint = this.pos[m].plus( new vec2(  0.25, -0.25 ) ).minus( axisStart ); // br point in shape.
+                let pos = this.mesh[m].getVertexPosition( i );
+                let relativePoint = this.pos[m].plus( vec2.getTemp( pos.x, pos.y ) ).minus( axisStart );
 
                 let projectedPerc = axisDirection.dot( relativePoint );
                 let projectedPos = axisStart.plus( axisDirection.times( projectedPerc ) );
