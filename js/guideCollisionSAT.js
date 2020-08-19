@@ -104,7 +104,7 @@ class GuideCollisionSAT extends Guide
         {
             imgui.window( "Definitions" );
             imgui.text( "More to come.");
-            imgui.text( "");
+            imgui.text( "" );
             imgui.window( "Separating Axis Theorem" );
         }
 
@@ -112,7 +112,7 @@ class GuideCollisionSAT extends Guide
         {
             imgui.window( "Definitions" );
             imgui.text( "More to come.");
-            imgui.text( "");
+            imgui.text( "" );
             imgui.window( "Separating Axis Theorem" );
         }
 
@@ -120,7 +120,7 @@ class GuideCollisionSAT extends Guide
         {
             imgui.window( "Definitions" );
             imgui.text( "More to come.");
-            imgui.text( "");
+            imgui.text( "" );
             imgui.window( "Separating Axis Theorem" );
         }
 
@@ -128,7 +128,7 @@ class GuideCollisionSAT extends Guide
         {
             imgui.window( "Definitions" );
             imgui.text( "More to come.");
-            imgui.text( "");
+            imgui.text( "" );
             imgui.window( "Separating Axis Theorem" );
         }
 
@@ -180,6 +180,8 @@ class GuideCollisionSAT extends Guide
         this.renderer.drawVector( axisStart, axisEnd, axisColor );
         
         // Grab the vertex positions from the mesh and project them onto the chosen axis.
+        let minPerc = [999999,999999];
+        let maxPerc = [-999999,-999999];
         for( let m=0; m<2; m++ )
         {
             for( let i=0; i<4; i++ )
@@ -188,9 +190,17 @@ class GuideCollisionSAT extends Guide
                 let relativePoint = this.pos[m].plus( vec2.getTemp( pos.x, pos.y ) ).minus( axisStart );
 
                 let projectedPerc = axisDirection.dot( relativePoint );
+                if( projectedPerc < minPerc[m] ) minPerc[m] = projectedPerc;
+                if( projectedPerc > maxPerc[m] ) maxPerc[m] = projectedPerc;
+
                 let projectedPos = axisStart.plus( axisDirection.times( projectedPerc ) );
                 this.renderer.drawPoint( projectedPos, this.color[m] );
             }
+        }
+
+        if( minPerc[1] < maxPerc[0] && maxPerc[1] > minPerc[0] )
+        {
+            imgui.text( "Colliding on this axis" );
         }
     }
 
