@@ -44,7 +44,7 @@ class Guide
 
     switchPage(page)
     {
-        if( this.page == page ||
+        if( this.page === page ||
             page < 1 ||
             page > this.numPages )
         {

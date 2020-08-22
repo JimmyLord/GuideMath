@@ -52,7 +52,7 @@ class GuideAcceleration extends Guide
 {
     constructor(mainProject, framework)
     {
-        let numPages = 5;
+        let numPages = 6;
         super( mainProject, framework, numPages );
 
         this.vertexRadius = 0.5;
@@ -163,13 +163,13 @@ class GuideAcceleration extends Guide
         let imgui = this.framework.imgui;
         imgui.window( "Acceleration" );
 
-        //if( this.startPosition.distanceFrom( this.endPosition ) == 0 )
+        //if( this.startPosition.distanceFrom( this.endPosition ) === 0 )
         //{
         //    imgui.text( "Click and drag to create a vector" );
         //}
 
         // Add page selector.
-        this.switchPage( this.renderer.addPageSelector( this.framework, this.page, this.numPages ) );
+        let switchedPage = this.switchPage( this.renderer.addPageSelector( this.framework, this.page, this.numPages ) );
 
         //if( imgui.checkbox( "Show positions", this.showPositions ) )
         //{
@@ -187,10 +187,15 @@ class GuideAcceleration extends Guide
         let showAccelerationAdjuster = false;
         let showBasicControls = false;
         let showTimeStepControls = false;
+        let showGraphControls = false;
+        let showCodeEuler = false;
+        let showCodeImplicitEuler = false;
+        let showCodeVerlet = false;
+        let showIntegratedGraph = false;
         let showObjects = false;
         let showGraph = false;
 
-        if( this.page == 1 )
+        if( this.page === 1 )
         {
             if( this.switchedPage )
             {
@@ -203,8 +208,8 @@ class GuideAcceleration extends Guide
             }
 
             imgui.window( "Definitions" );
-            imgui.text( "Velocity is the change in position over time.");
-            imgui.text( "final position = initial position + velocity * Δtime");
+            imgui.text( "Velocity is the change in position over time." );
+            imgui.text( "final position = initial position + velocity * Δtime" );
 
             // Text.
             imgui.window( "FullFrame" );
@@ -223,7 +228,7 @@ class GuideAcceleration extends Guide
             showGraph = false;
         }
 
-        if( this.page == 2 )
+        if( this.page === 2 )
         {
             if( this.switchedPage )
             {
@@ -236,8 +241,8 @@ class GuideAcceleration extends Guide
             }
 
             imgui.window( "Definitions" );
-            imgui.text( "Acceleration is the change in velocity over time.");
-            imgui.text( "final velocity = initial velocity + acceleration * Δtime");
+            imgui.text( "Acceleration is the change in velocity over time." );
+            imgui.text( "final velocity = initial velocity + acceleration * Δtime" );
 
             // Text.
             imgui.window( "FullFrame" );
@@ -257,7 +262,7 @@ class GuideAcceleration extends Guide
             showGraph = false;
         }
 
-        if( this.page == 3 )
+        if( this.page === 3 )
         {
             if( this.switchedPage )
             {
@@ -270,8 +275,8 @@ class GuideAcceleration extends Guide
             }
 
             imgui.window( "Definitions" );
-            imgui.text( "Adding the results for each time chunk is called integration.");
-            imgui.text( "Integration will cause drift in your numbers depending on the step size.");
+            imgui.text( "Adding the results for each time chunk is called integration." );
+            imgui.text( "Integration will cause drift in your numbers depending on the step size." );
 
             // Text.
             imgui.window( "FullFrame" );
@@ -291,11 +296,35 @@ class GuideAcceleration extends Guide
             showGraph = false;
         }
 
-        if( this.page == 4 )
+        if( this.page === 4 )
         {
             imgui.window( "Definitions" );
-            imgui.text( "Integration error comes from estimating the area beneath the acceleration");
-            imgui.text( "   curve. The larger the step size, the further off the estimate.");
+            imgui.text( "The proper equation for distance travelled under constant acceleration is:" );
+            imgui.text( "d = v * t + 0.5 * a * t*t" );
+
+            imgui.window( "FullFrame" );
+
+            imgui.window( "Acceleration" );
+            showVelocityAdjuster = false;
+            showAccelerationAdjuster = false;
+            showBasicControls = false;
+            showTimeStepControls = false;
+            showCodeVerlet = true;
+            showObjects = false;
+            showGraph = true;
+            showGraphControls = true;
+
+            let properX = 0 * this.totalPlayTime + 0.5 * this.acceleration * this.totalPlayTime * this.totalPlayTime;
+            imgui.text( "Proper X: " + properX.toFixed(4) );
+
+            imgui.text( "" );
+        }
+
+        if( this.page === 5 )
+        {
+            imgui.window( "Definitions" );
+            imgui.text( "Integration error comes from estimating the area beneath the acceleration" );
+            imgui.text( "   curve. The larger the step size, the further off the estimate." );
 
             imgui.window( "FullFrame" );
             //this.renderer.drawString( "or maybe here...", 0, 0, align.x.center, align.y.center );
@@ -305,77 +334,47 @@ class GuideAcceleration extends Guide
             showAccelerationAdjuster = false;
             showBasicControls = false;
             showTimeStepControls = false;
+            showCodeEuler = true;
+            showCodeImplicitEuler = false;
             showObjects = false;
             showGraph = true;
+            showGraphControls = true;
+            showIntegratedGraph = true;
 
-            imgui.text( "" );
-            //imgui.text( "TODO" );
-            //imgui.text( "Imagine a nice graph here..." );
+            let properX = 0 * this.totalPlayTime + 0.5 * this.acceleration * this.totalPlayTime * this.totalPlayTime;
+            imgui.text( "Proper X: " + properX.toFixed(4) );
 
-            let changed = false;
-            [this.totalPlayTime, changed] = imgui.dragNumber( "Time: ", this.totalPlayTime, 0.01, 2, 0.01, 60 );
-            if( changed ) this.rebuildGraph = true;
-            [this.acceleration, changed] = imgui.dragNumber( "Acceleration: ", this.acceleration, 0.01, 2 );
-            if( changed ) this.rebuildGraph = true;
-            [this.fps, changed] = imgui.dragNumber( "FPS: ", this.fps, 1, 0, 1, 120 );
-            if( changed ) this.rebuildGraph = true;
-
-            if( this.rebuildGraph )
+            let timeStep = 1 / this.fps;
+            let pos = 0;
+            let vel = 0;
+            for( let i=0; i<this.fps * this.totalPlayTime; i++ )
             {
-                this.rebuildGraph = false;
-
-                let timeStep = 1 / this.fps;
-                let pos = 0;
-                let vel = 0;
-
-                let numVerts = Math.trunc( 60 * this.totalPlayTime );
-                this.graphMeshProper.startShape( this.framework.gl.LINE_STRIP, numVerts+1 );
-                this.graphMeshProper.addVertex( new vec3(0,0,0), new vec2(0,0), new vec3(0,0,-1), new color(255,255,255,255) );
-                for( let i=0; i<numVerts; i++ )
-                {
-                    let properX = 0 * this.totalPlayTime + 0.5 * this.acceleration * (i+1)/60 * (i+1)/60;
-                    this.graphMeshProper.addVertex( new vec3((i+1)/60,properX,0), new vec2(0,0), new vec3(0,0,-1), new color(255,255,255,255) );
-                }
-                this.graphMeshProper.endShape();
-
-                numVerts = Math.trunc( this.fps * this.totalPlayTime );
-                this.graphMeshIntegrated.startShape( this.framework.gl.LINE_STRIP, numVerts+1 );
-                this.graphMeshIntegrated.addVertex( new vec3(0,0,0), new vec2(0,0), new vec3(0,0,-1), new color(255,255,255,255) );
-                for( let i=0; i<numVerts; i++ )
-                {
-                    vel += this.acceleration * timeStep;
-                    pos += vel * timeStep;
-
-                    this.graphMeshIntegrated.addVertex( new vec3((i+1)/this.fps,pos,0), new vec2(0,0), new vec3(0,0,-1), new color(255,255,255,255) );
-                }
-                this.graphMeshIntegrated.endShape();
+                pos += vel * timeStep;
+                vel += this.acceleration * timeStep;
             }
-
-            //imgui.text( "Proper X: " + properX.toFixed(4) );
-            //imgui.text( "Integrated X: " + pos.toFixed(4) );
+            imgui.text( "Integrated X: " + pos.toFixed(4) );
         }
 
-        if( this.page == 5 )
+        if( this.page === 6 )
         {
             imgui.window( "Definitions" );
-            imgui.text( "The proper equation for distance travelled under constant acceleration is:");
-            imgui.text( "d = v * t + 0.5 * a * t*t");
+            imgui.text( "Implicit Euler" );
+            imgui.text( "" );
 
             imgui.window( "FullFrame" );
+            //this.renderer.drawString( "or maybe here...", 0, 0, align.x.center, align.y.center );
 
             imgui.window( "Acceleration" );
             showVelocityAdjuster = false;
             showAccelerationAdjuster = false;
             showBasicControls = false;
             showTimeStepControls = false;
+            showCodeEuler = false;
+            showCodeImplicitEuler = true;
             showObjects = false;
             showGraph = true;
-
-            imgui.text( "" );
-
-            [this.totalPlayTime] = imgui.dragNumber( "Time: ", this.totalPlayTime, 0.01, 2, 0.01, 60 );
-            [this.acceleration] = imgui.dragNumber( "Acceleration: ", this.acceleration, 0.01, 2 );
-            [this.fps] = imgui.dragNumber( "FPS: ", this.fps, 1, 0, 1, 120 );
+            showGraphControls = true;
+            showIntegratedGraph = true;
 
             let properX = 0 * this.totalPlayTime + 0.5 * this.acceleration * this.totalPlayTime * this.totalPlayTime;
             imgui.text( "Proper X: " + properX.toFixed(4) );
@@ -391,13 +390,82 @@ class GuideAcceleration extends Guide
             imgui.text( "Integrated X: " + pos.toFixed(4) );
         }
 
-        imgui.text( "" );
+        if( showGraphControls )
+        {
+            if( this.switchedPage )
+                this.rebuildGraph = true;
+
+            let changed = false;
+            [this.totalPlayTime, changed] = imgui.dragNumber( "Time: ", this.totalPlayTime, 0.01, 2, 0.01, 60 );
+            if( changed ) this.rebuildGraph = true;
+            [this.acceleration, changed] = imgui.dragNumber( "Acceleration: ", this.acceleration, 0.01, 2 );
+            if( changed ) this.rebuildGraph = true;
+            [this.fps, changed] = imgui.dragNumber( "FPS: ", this.fps, 1, 0, 1, 120 );
+            if( changed ) this.rebuildGraph = true;
+        }
+
+        if( this.rebuildGraph )
+        {
+            this.rebuildGraph = false;
+
+            let timeStep = 1 / this.fps;
+            let pos = 0;
+            let vel = 0;
+
+            let numVerts = Math.trunc( 60 * this.totalPlayTime );
+            this.graphMeshProper.startShape( this.framework.gl.LINE_STRIP, numVerts+1 );
+            this.graphMeshProper.addVertex( new vec3(0,0,0), new vec2(0,0), new vec3(0,0,-1), new color(255,255,255,255) );
+            for( let i=0; i<numVerts; i++ )
+            {
+                let properX = 0 * this.totalPlayTime + 0.5 * this.acceleration * (i+1)/60 * (i+1)/60;
+                this.graphMeshProper.addVertex( new vec3((i+1)/60,properX,0), new vec2(0,0), new vec3(0,0,-1), new color(255,255,255,255) );
+            }
+            this.graphMeshProper.endShape();
+
+            numVerts = Math.trunc( this.fps * this.totalPlayTime );
+            this.graphMeshIntegrated.startShape( this.framework.gl.LINE_STRIP, numVerts+1 );
+            this.graphMeshIntegrated.addVertex( new vec3(0,0,0), new vec2(0,0), new vec3(0,0,-1), new color(255,255,255,255) );
+            for( let i=0; i<numVerts; i++ )
+            {
+                if( showCodeEuler )
+                {
+                    pos += vel * timeStep;
+                    vel += this.acceleration * timeStep;
+                }
+                if( showCodeImplicitEuler )
+                {
+                    vel += this.acceleration * timeStep;
+                    pos += vel * timeStep;
+                }
+
+                this.graphMeshIntegrated.addVertex( new vec3((i+1)/this.fps,pos,0), new vec2(0,0), new vec3(0,0,-1), new color(255,255,255,255) );
+            }
+            this.graphMeshIntegrated.endShape();
+        }
 
         if( showVelocityAdjuster )
             [this.objects[0].initialVel.x, needsReset] = imgui.dragNumber( "Vel: ", this.objects[0].initialVel.x, 0.01, 2 );
 
         if( showAccelerationAdjuster )
             [this.objects[0].initialAcc.x, needsReset] = imgui.dragNumber( "Acc: ", this.objects[0].initialAcc.x, 0.01, 2 );
+
+        if( showCodeEuler )
+        {
+            imgui.window( "Code Sample" )
+            imgui.text( "// Euler integration" );
+            imgui.text( "// Inaccurate at low FPS" );
+            imgui.text( "pos += vel * deltaTime;" );
+            imgui.text( "vel += acc * deltaTime;" );
+        }
+
+        if( showCodeImplicitEuler )
+        {
+            imgui.window( "Code Sample" )
+            imgui.text( "// Implicit Euler integration" );
+            imgui.text( "// Inaccurate at low FPS" );
+            imgui.text( "vel += acc * deltaTime;" );
+            imgui.text( "pos += vel * deltaTime;" );
+        }
 
         if( needsReset )
             this.reset();
@@ -457,10 +525,10 @@ class GuideAcceleration extends Guide
         }
 
         if( showGraph )
-        {
             this.renderer.drawMesh( this.graphMeshProper, new vec3( 0, 0, 0 ), this.framework.resources.materials["green"] );
+
+        if( showIntegratedGraph )
             this.renderer.drawMesh( this.graphMeshIntegrated, new vec3( 0, 0, 0 ), this.framework.resources.materials["white"] );
-        }
 
         //// Axes.
         //this.renderer.drawVector( this.startPosition, new vec2( this.endPosition.x, this.startPosition.y ), xAxisColor );
