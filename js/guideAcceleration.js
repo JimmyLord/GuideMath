@@ -52,7 +52,7 @@ class GuideAcceleration extends Guide
 {
     constructor(mainProject, framework)
     {
-        let numPages = 6;
+        let numPages = 7;
         super( mainProject, framework, numPages );
 
         this.vertexRadius = 0.5;
@@ -78,7 +78,7 @@ class GuideAcceleration extends Guide
 
         // For page 5.
         this.acceleration = 1.0;
-        this.fps = 60;
+        this.fps = 2;
 
         // Settings.
         this.showPositions = false;
@@ -309,7 +309,6 @@ class GuideAcceleration extends Guide
             showAccelerationAdjuster = false;
             showBasicControls = false;
             showTimeStepControls = false;
-            showCodeVerlet = true;
             showObjects = false;
             showGraph = true;
             showGraphControls = true;
@@ -324,19 +323,12 @@ class GuideAcceleration extends Guide
         {
             imgui.window( "Definitions" );
             imgui.text( "Integration error comes from estimating the area beneath the acceleration" );
-            imgui.text( "   curve. The larger the step size, the further off the estimate." );
+            imgui.text( "  curve. The larger the step size, the further off the estimate." );
 
             imgui.window( "FullFrame" );
-            //this.renderer.drawString( "or maybe here...", 0, 0, align.x.center, align.y.center );
 
             imgui.window( "Acceleration" );
-            showVelocityAdjuster = false;
-            showAccelerationAdjuster = false;
-            showBasicControls = false;
-            showTimeStepControls = false;
             showCodeEuler = true;
-            showCodeImplicitEuler = false;
-            showObjects = false;
             showGraph = true;
             showGraphControls = true;
             showIntegratedGraph = true;
@@ -358,20 +350,13 @@ class GuideAcceleration extends Guide
         if( this.page === 6 )
         {
             imgui.window( "Definitions" );
-            imgui.text( "Implicit Euler" );
-            imgui.text( "" );
+            imgui.text( "Implicit Euler or backwards Euler integration applies the change" );
+            imgui.text( "  in velocity before applying the velocity to the position" );
 
             imgui.window( "FullFrame" );
-            //this.renderer.drawString( "or maybe here...", 0, 0, align.x.center, align.y.center );
 
             imgui.window( "Acceleration" );
-            showVelocityAdjuster = false;
-            showAccelerationAdjuster = false;
-            showBasicControls = false;
-            showTimeStepControls = false;
-            showCodeEuler = false;
             showCodeImplicitEuler = true;
-            showObjects = false;
             showGraph = true;
             showGraphControls = true;
             showIntegratedGraph = true;
@@ -386,6 +371,36 @@ class GuideAcceleration extends Guide
             {
                 vel += this.acceleration * timeStep;
                 pos += vel * timeStep;
+            }
+            imgui.text( "Integrated X: " + pos.toFixed(4) );
+        }
+
+        if( this.page === 7 )
+        {
+            imgui.window( "Definitions" );
+            imgui.text( "Verlet integration averages the old velocity with the new velocity" );
+            imgui.text( "  producing values that are correct with constant acceleration." );
+
+            imgui.window( "FullFrame" );
+
+            imgui.window( "Acceleration" );
+            showCodeVerlet = true;
+            showGraph = true;
+            showGraphControls = true;
+            showIntegratedGraph = true;
+
+            let properX = 0 * this.totalPlayTime + 0.5 * this.acceleration * this.totalPlayTime * this.totalPlayTime;
+            imgui.text( "Proper X: " + properX.toFixed(4) );
+
+            let timeStep = 1 / this.fps;
+            let pos = 0;
+            let vel = 0;
+            for( let i=0; i<this.fps * this.totalPlayTime; i++ )
+            {
+                let newVel = vel + this.acceleration * timeStep;
+                let appliedVel = (newVel + vel)/2;
+                pos += appliedVel * timeStep;
+                vel = newVel;
             }
             imgui.text( "Integrated X: " + pos.toFixed(4) );
         }
@@ -437,6 +452,13 @@ class GuideAcceleration extends Guide
                     vel += this.acceleration * timeStep;
                     pos += vel * timeStep;
                 }
+                if( showCodeVerlet )
+                {
+                    let newVel = vel + this.acceleration * timeStep;
+                    let appliedVel = (newVel + vel)/2;
+                    pos += appliedVel * timeStep;
+                    vel = newVel;
+                }
 
                 this.graphMeshIntegrated.addVertex( new vec3((i+1)/this.fps,pos,0), new vec2(0,0), new vec3(0,0,-1), new color(255,255,255,255) );
             }
@@ -465,6 +487,18 @@ class GuideAcceleration extends Guide
             imgui.text( "// Inaccurate at low FPS" );
             imgui.text( "vel += acc * deltaTime;" );
             imgui.text( "pos += vel * deltaTime;" );
+        }
+
+        if( showCodeVerlet )
+        {
+            imgui.window( "Code Sample" )
+            imgui.text( "// Verlet integration" );
+            imgui.text( "// Generally better," );
+            imgui.text( "//   but more operations" );
+            imgui.text( "newVel = vel + acc * deltaTime;" );
+            imgui.text( "appliedVel = (newVel + vel)/2;" );
+            imgui.text( "pos += appliedVel * deltaTime;" );
+            imgui.text( "vel = newVel;" );
         }
 
         if( needsReset )
