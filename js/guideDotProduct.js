@@ -204,7 +204,6 @@ class GuideDotProduct extends Guide
             let sideOfLine = (this.vertex1.x - this.vertexOrigin.x) * (this.vertex2.y - this.vertexOrigin.y) - (this.vertex1.y - this.vertexOrigin.y) * (this.vertex2.x - this.vertexOrigin.x);
             if( sideOfLine < 0 ) sideOfLine = -1; else sideOfLine = 1;
             let radius = 0.3;
-            debugger;
             let startAngle = Math.atan2( v1.y, v1.x );
             this.meshAngle.removeAllVerts();
             let position = vec3.getTemp( this.vertexOrigin.x + Math.cos(startAngle)*radius, this.vertexOrigin.y + Math.sin(startAngle)*radius, 0 );

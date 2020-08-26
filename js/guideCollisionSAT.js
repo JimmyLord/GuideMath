@@ -34,6 +34,7 @@ class GuideCollisionSAT extends Guide
         this.pos[1] = new vec2( 0.8, 0.3 );
         this.color[1] = this.framework.resources.materials["blue"];
 
+        this.showAllAxes = false;
         this.currentAxis = 0;
 
         // Init imgui window positions and sizes.
@@ -74,6 +75,9 @@ class GuideCollisionSAT extends Guide
     {
         let decimals = 2;
 
+        // Some precomputed values.
+        let totalEdges = this.mesh[0].edgeList.length + this.mesh[1].edgeList.length;
+
         // Menu.
         let imgui = this.framework.imgui;
         imgui.window( "Separating Axis Theorem" );
@@ -88,8 +92,12 @@ class GuideCollisionSAT extends Guide
             imgui.text( "This is achieved by projecting the shapes onto multiple axes.");
             imgui.window( "Separating Axis Theorem" );
 
-            let totalEdges = this.mesh[0].edgeList.length + this.mesh[1].edgeList.length;
-            [this.currentAxis] = imgui.dragNumber( "Axis", this.currentAxis, 1, 0, 0, totalEdges-1 );
+            if( imgui.checkbox( "Show All Axes", this.showAllAxes ) )
+                this.showAllAxes = !this.showAllAxes;
+            if( this.showAllAxes === false )
+            {
+                [this.currentAxis] = imgui.dragNumber( "Axis", this.currentAxis, 1, 0, 0, totalEdges-1 );
+            }
         }
 
         if( this.page === 2 )
@@ -147,60 +155,86 @@ class GuideCollisionSAT extends Guide
         
         // Grab the edge from the mesh.
         // Extend and offset the edge away from the shape for visuals.
-        let v1 = vec3.getTemp();
-        let v2 = vec3.getTemp();
-        let currentAxis = this.currentAxis;
-        let currentMesh = 0;
-        if( this.currentAxis >= this.mesh[0].edgeList.length )
+        let minAxis = 0;
+        let maxAxis = totalEdges - 1;
+        let collidingAxisCount = 0;
+
+        if( this.showAllAxes === false )
         {
-            currentAxis = this.currentAxis - this.mesh[0].edgeList.length;
-            currentMesh = 1;
+            minAxis = this.currentAxis;
+            maxAxis = this.currentAxis;
         }
-        
-        this.mesh[currentMesh].getVertexPositionsAtEdge( currentAxis, v1, v2 );
-        v1.add( this.pos[currentMesh] );
-        v2.add( this.pos[currentMesh] );
 
-        let dir = v2.minus( v1 );
-        dir.normalize();
-        v1.subtract( dir.times( 0.5 ) );
-        dir.multiplyBy( 1.5 );
-        v2 = v1.plus( dir );
-        let normal = vec2.getTemp( -dir.y, dir.x );
-        v1.x += normal.x * 0.25;
-        v1.y += normal.y * 0.25;
-        v2.x += normal.x * 0.25;
-        v2.y += normal.y * 0.25;
-
-        let axisStart = vec2.getTemp( v1.x, v1.y );
-        let axisEnd = vec2.getTemp( v2.x, v2.y );
-
-        let axisDirection = axisEnd.minus( axisStart );
-        axisDirection.normalize();
-        this.renderer.drawVector( axisStart, axisEnd, axisColor );
-        
-        // Grab the vertex positions from the mesh and project them onto the chosen axis.
-        let minPerc = [999999,999999];
-        let maxPerc = [-999999,-999999];
-        for( let m=0; m<2; m++ )
+        for( let currentAxisIndex = minAxis; currentAxisIndex <= maxAxis; currentAxisIndex++ )
         {
-            for( let i=0; i<4; i++ )
+            let v1 = vec3.getTemp();
+            let v2 = vec3.getTemp();
+            let currentAxis = currentAxisIndex;
+            let currentMesh = 0;
+            if( currentAxis >= this.mesh[0].edgeList.length )
             {
-                let pos = this.mesh[m].getVertexPosition( i );
-                let relativePoint = this.pos[m].plus( vec2.getTemp( pos.x, pos.y ) ).minus( axisStart );
+                currentAxis = currentAxis - this.mesh[0].edgeList.length;
+                currentMesh = 1;
+            }
+        
+            this.mesh[currentMesh].getVertexPositionsAtEdge( currentAxis, v1, v2 );
+            v1.add( this.pos[currentMesh] );
+            v2.add( this.pos[currentMesh] );
 
-                let projectedPerc = axisDirection.dot( relativePoint );
-                if( projectedPerc < minPerc[m] ) minPerc[m] = projectedPerc;
-                if( projectedPerc > maxPerc[m] ) maxPerc[m] = projectedPerc;
+            let dir = v2.minus( v1 );
+            dir.normalize();
+            v1.subtract( dir.times( 0.5 ) );
+            dir.multiplyBy( 1.5 );
+            v2 = v1.plus( dir );
+            let normal = vec2.getTemp( -dir.y, dir.x );
+            v1.x += normal.x * 0.25;
+            v1.y += normal.y * 0.25;
+            v2.x += normal.x * 0.25;
+            v2.y += normal.y * 0.25;
 
-                let projectedPos = axisStart.plus( axisDirection.times( projectedPerc ) );
-                this.renderer.drawPoint( projectedPos, this.color[m] );
+            let axisStart = vec2.getTemp( v1.x, v1.y );
+            let axisEnd = vec2.getTemp( v2.x, v2.y );
+
+            let axisDirection = axisEnd.minus( axisStart );
+            axisDirection.normalize();
+            this.renderer.drawVector( axisStart, axisEnd, axisColor );
+        
+            // Grab the vertex positions from the mesh and project them onto the chosen axis.
+            let minPerc = [999999,999999];
+            let maxPerc = [-999999,-999999];
+            for( let m=0; m<2; m++ )
+            {
+                for( let i=0; i<4; i++ )
+                {
+                    let pos = this.mesh[m].getVertexPosition( i );
+                    let relativePoint = this.pos[m].plus( vec2.getTemp( pos.x, pos.y ) ).minus( axisStart );
+
+                    let projectedPerc = axisDirection.dot( relativePoint );
+                    if( projectedPerc < minPerc[m] ) minPerc[m] = projectedPerc;
+                    if( projectedPerc > maxPerc[m] ) maxPerc[m] = projectedPerc;
+
+                    let projectedPos = axisStart.plus( axisDirection.times( projectedPerc ) );
+                    this.renderer.drawPoint( projectedPos, this.color[m] );
+                }
+            }
+
+            if( minPerc[1] < maxPerc[0] && maxPerc[1] > minPerc[0] )
+            {
+                collidingAxisCount++;
             }
         }
 
-        if( minPerc[1] < maxPerc[0] && maxPerc[1] > minPerc[0] )
+        if( this.showAllAxes === false )
         {
-            imgui.text( "Colliding on this axis" );
+            if( collidingAxisCount > 0 )
+                imgui.text( "Colliding on this axis" );
+        }
+        else
+        {
+            if( collidingAxisCount === 0 )
+                imgui.text( "Not Colliding" );
+            else
+                imgui.text( "Colliding on " + collidingAxisCount + " axes" );
         }
     }
 
