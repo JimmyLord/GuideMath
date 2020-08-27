@@ -24,6 +24,9 @@ class GuideCollisionSAT extends Guide
         this.pos = new Array(2);
         this.color = new Array(2);
 
+        this.meshSelected = -1;
+        this.meshSelectionOffset = new vec2();
+
         this.mesh[0] = new Mesh( this.framework.gl );
         this.mesh[0].createBox( 0.5, 0.5, true );
         this.pos[0] = new vec2( 0, 0 );
@@ -245,9 +248,9 @@ class GuideCollisionSAT extends Guide
         if( this.framework.imgui.isHoveringWindow )
             return;
 
-        if( this.dragging )
+        if( this.meshSelected !== -1 )
         {
-            this.endPosition.set( this.mousePosition );
+            this.pos[this.meshSelected].set( this.mousePosition.plus( this.meshSelectionOffset ) );
         }
     }
 
@@ -260,10 +263,8 @@ class GuideCollisionSAT extends Guide
 
         if( buttonID === 0 )
         {
-            this.startPosition.setF32( orthoPos.x, orthoPos.y );
-            this.currentPosition.setF32( orthoPos.x, orthoPos.y );
-            this.endPosition.setF32( orthoPos.x, orthoPos.y );
-            this.dragging = true;
+            this.meshSelected = 1;
+            this.meshSelectionOffset.set( this.pos[this.meshSelected].minus( this.mousePosition ) );
         }
     }
 
@@ -274,9 +275,9 @@ class GuideCollisionSAT extends Guide
         if( this.framework.imgui.isHoveringWindow )
             return;
 
-        if( buttonID === 0 && this.dragging === true )
+        if( buttonID === 0 )
         {
-            this.dragging = false;
+            this.meshSelected = -1;
         }
     }
 }
