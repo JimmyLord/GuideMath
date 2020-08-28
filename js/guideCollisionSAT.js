@@ -37,7 +37,7 @@ class GuideCollisionSAT extends Guide
         this.mesh[1] = new Mesh( this.framework.gl );
         this.mesh[1].createBox( 0.8, 0.3, true );
         this.pos[1] = new vec2( 0.8, 0.3 );
-        this.rot[1] = 45;
+        this.rot[1] = 0;
         this.color[1] = this.framework.resources.materials["blue"];
 
         this.showAllAxes = false;
@@ -253,6 +253,11 @@ class GuideCollisionSAT extends Guide
                 imgui.text( "Not Colliding" );
             else
                 imgui.text( "Colliding on " + collidingAxisCount + " axes" );
+
+            if( collidingAxisCount === 8 )
+                imgui.text( "Objects are overlapping" );
+            else
+                imgui.text( "No overlap" );
         }
     }
 
@@ -265,7 +270,15 @@ class GuideCollisionSAT extends Guide
 
         if( this.meshSelected !== -1 )
         {
-            this.pos[this.meshSelected].set( this.mousePosition.plus( this.meshSelectionOffset ) );
+            if( this.meshSelectionOffset.length() < 0.2 )
+            {
+                this.pos[this.meshSelected].set( this.mousePosition.plus( this.meshSelectionOffset ) );
+            }
+            else
+            {
+                let offset = this.mousePosition.minus( this.pos[this.meshSelected] );
+                this.rot[this.meshSelected] = -Math.atan2( offset.y, offset.x ) / Math.PI * 180;
+            }
         }
     }
 
