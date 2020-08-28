@@ -22,6 +22,7 @@ class GuideCollisionSAT extends Guide
 
         this.mesh = new Array(2);
         this.pos = new Array(2);
+        this.rot = new Array(2);
         this.color = new Array(2);
 
         this.meshSelected = -1;
@@ -30,11 +31,13 @@ class GuideCollisionSAT extends Guide
         this.mesh[0] = new Mesh( this.framework.gl );
         this.mesh[0].createBox( 0.5, 0.5, true );
         this.pos[0] = new vec2( 0, 0 );
+        this.rot[0] = 0;
         this.color[0] = this.framework.resources.materials["green"];
 
         this.mesh[1] = new Mesh( this.framework.gl );
         this.mesh[1].createBox( 0.8, 0.3, true );
         this.pos[1] = new vec2( 0.8, 0.3 );
+        this.rot[1] = 45;
         this.color[1] = this.framework.resources.materials["blue"];
 
         this.showAllAxes = false;
@@ -72,6 +75,15 @@ class GuideCollisionSAT extends Guide
 
             this.currentPosition = new vec2( Math.cos( currentRadians ), Math.sin( currentRadians ) );
         }
+    }
+
+    rotatePoint(point, angle)
+    {
+        let matRot = new mat4();
+        matRot.setIdentity();
+        matRot.rotate( angle, 0, 0, 1 );
+        let rotatedPoint = matRot.transformVec4( vec4.getTemp( point.x, point.y, 0, 1 ) );
+        return vec2.getTemp( rotatedPoint.x, rotatedPoint.y );
     }
 
     draw()
@@ -153,8 +165,8 @@ class GuideCollisionSAT extends Guide
         }
 
         // Shapes.
-        this.renderer.drawMesh( this.mesh[0], this.pos[0], this.color[0] );
-        this.renderer.drawMesh( this.mesh[1], this.pos[1], this.color[1] );
+        this.renderer.drawMesh( this.mesh[0], this.pos[0], this.rot[0], this.color[0] );
+        this.renderer.drawMesh( this.mesh[1], this.pos[1], this.rot[1], this.color[1] );
         
         // Grab the edge from the mesh.
         // Extend and offset the edge away from the shape for visuals.
@@ -181,6 +193,8 @@ class GuideCollisionSAT extends Guide
             }
         
             this.mesh[currentMesh].getVertexPositionsAtEdge( currentAxis, v1, v2 );
+            v1 = this.rotatePoint( v1, this.rot[currentMesh] );
+            v2 = this.rotatePoint( v2, this.rot[currentMesh] );
             v1.add( this.pos[currentMesh] );
             v2.add( this.pos[currentMesh] );
 
@@ -210,6 +224,7 @@ class GuideCollisionSAT extends Guide
                 for( let i=0; i<4; i++ )
                 {
                     let pos = this.mesh[m].getVertexPosition( i );
+                    pos = this.rotatePoint( pos, this.rot[m] );
                     let relativePoint = this.pos[m].plus( vec2.getTemp( pos.x, pos.y ) ).minus( axisStart );
 
                     let projectedPerc = axisDirection.dot( relativePoint );

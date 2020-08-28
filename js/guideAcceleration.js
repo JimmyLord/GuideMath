@@ -559,10 +559,10 @@ class GuideAcceleration extends Guide
         }
 
         if( showGraph )
-            this.renderer.drawMesh( this.graphMeshProper, new vec3( 0, 0, 0 ), this.framework.resources.materials["green"] );
+            this.renderer.drawMesh( this.graphMeshProper, new vec3( 0, 0, 0 ), 0, this.framework.resources.materials["green"] );
 
         if( showIntegratedGraph )
-            this.renderer.drawMesh( this.graphMeshIntegrated, new vec3( 0, 0, 0 ), this.framework.resources.materials["white"] );
+            this.renderer.drawMesh( this.graphMeshIntegrated, new vec3( 0, 0, 0 ), 0, this.framework.resources.materials["white"] );
 
         //// Axes.
         //this.renderer.drawVector( this.startPosition, new vec2( this.endPosition.x, this.startPosition.y ), xAxisColor );

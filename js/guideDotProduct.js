@@ -215,7 +215,7 @@ class GuideDotProduct extends Guide
                 this.meshAngle.addVertexF( position.x, position.y, position.z,   0,0,   0,0,-1,   255,255,255,255 );
             }
             this.meshAngle.endShape();
-            this.renderer.drawMesh( this.meshAngle, new vec3( 0, 0, 0 ), this.framework.resources.materials["green"] );
+            this.renderer.drawMesh( this.meshAngle, new vec3( 0, 0, 0 ), 0, this.framework.resources.materials["green"] );
         }
 
         // Hypotenuse normalized.

@@ -107,11 +107,11 @@ class RenderHelpers
         }
     }
 
-    drawMesh(mesh, position, material)
+    drawMesh(mesh, position, rotZ, material)
     {
         let matWorld = new mat4;
 
-        matWorld.createSRT( vec3.getTemp(1,1,1), vec3.getTemp(0,0,0), vec3.getTemp(position.x, position.y, 0) );
+        matWorld.createSRT( vec3.getTemp(1,1,1), vec3.getTemp(0,0,rotZ), vec3.getTemp(position.x, position.y, 0) );
         mesh.draw( this.camera, matWorld, material );
     }
 
