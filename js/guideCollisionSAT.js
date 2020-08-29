@@ -219,6 +219,8 @@ class GuideCollisionSAT extends Guide
             // Grab the vertex positions from the mesh and project them onto the chosen axis.
             let minPerc = [999999,999999];
             let maxPerc = [-999999,-999999];
+            let minPoint = [vec2.getTemp(), vec2.getTemp()];
+            let maxPoint = [vec2.getTemp(), vec2.getTemp()];
             for( let m=0; m<2; m++ )
             {
                 for( let i=0; i<4; i++ )
@@ -228,13 +230,17 @@ class GuideCollisionSAT extends Guide
                     let relativePoint = this.pos[m].plus( vec2.getTemp( pos.x, pos.y ) ).minus( axisStart );
 
                     let projectedPerc = axisDirection.dot( relativePoint );
-                    if( projectedPerc < minPerc[m] ) minPerc[m] = projectedPerc;
-                    if( projectedPerc > maxPerc[m] ) maxPerc[m] = projectedPerc;
 
                     let projectedPos = axisStart.plus( axisDirection.times( projectedPerc ) );
-                    this.renderer.drawPoint( projectedPos, this.color[m] );
+                    this.renderer.drawPoint( projectedPos, this.color[m], -1*m );
+
+                    if( projectedPerc < minPerc[m] ) { minPerc[m] = projectedPerc; minPoint[m].set( projectedPos ); }
+                    if( projectedPerc > maxPerc[m] ) { maxPerc[m] = projectedPerc; maxPoint[m].set( projectedPos ); }
                 }
             }
+
+            this.renderer.drawVector( minPoint[0], maxPoint[0], this.color[0] );
+            this.renderer.drawVector( minPoint[1], maxPoint[1], this.color[1] );
 
             if( minPerc[1] < maxPerc[0] && maxPerc[1] > minPerc[0] )
             {

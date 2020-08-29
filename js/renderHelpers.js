@@ -115,13 +115,13 @@ class RenderHelpers
         mesh.draw( this.camera, matWorld, material );
     }
 
-    drawPoint(pos, color)
+    drawPoint(pos, color, depth = 0)
     {
         let matWorld = new mat4;
 
         let mesh = this.framework.resources.meshes["vertex"];
 
-        matWorld.createSRT( new vec3(1), new vec3(0), new vec3(pos.x, pos.y, 0) );
+        matWorld.createSRT( new vec3(1), new vec3(0), new vec3(pos.x, pos.y, depth) );
         mesh.draw( this.camera, matWorld, color );
     }
 
