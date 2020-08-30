@@ -100,6 +100,10 @@ class GuideCollisionSAT extends Guide
         // Add page selector.
         let switchedPage = this.switchPage( this.renderer.addPageSelector( this.framework, this.page, this.numPages ) );
 
+        // Options.
+        let onlyShowAxesWithoutCollision = false;
+        let drawAllAxes = false;
+
         if( this.page === 1 )
         {
             imgui.window( "Definitions" );
@@ -113,6 +117,8 @@ class GuideCollisionSAT extends Guide
             {
                 [this.currentAxis] = imgui.dragNumber( "Axis", this.currentAxis, 1, 0, 0, totalEdges-1 );
             }
+
+            drawAllAxes = this.showAllAxes;
         }
 
         if( this.page === 2 )
@@ -121,6 +127,9 @@ class GuideCollisionSAT extends Guide
             imgui.text( "Every axis perpendicular to each edge in the two shapes must be tested.");
             imgui.text( "If there's an axis where the 2 projections don't overlap, then there is no collision.");
             imgui.window( "Separating Axis Theorem" );
+
+            onlyShowAxesWithoutCollision = true;
+            drawAllAxes = true;
         }
 
         if( this.page === 3 )
@@ -174,7 +183,7 @@ class GuideCollisionSAT extends Guide
         let maxAxis = totalEdges - 1;
         let collidingAxisCount = 0;
 
-        if( this.showAllAxes === false )
+        if( drawAllAxes === false )
         {
             minAxis = this.currentAxis;
             maxAxis = this.currentAxis;
@@ -214,7 +223,6 @@ class GuideCollisionSAT extends Guide
 
             let axisDirection = axisEnd.minus( axisStart );
             axisDirection.normalize();
-            this.renderer.drawVector( axisStart, axisEnd, axisColor );
         
             // Grab the vertex positions from the mesh and project them onto the chosen axis.
             let minPerc = [999999,999999];
@@ -232,23 +240,48 @@ class GuideCollisionSAT extends Guide
                     let projectedPerc = axisDirection.dot( relativePoint );
 
                     let projectedPos = axisStart.plus( axisDirection.times( projectedPerc ) );
-                    this.renderer.drawPoint( projectedPos, this.color[m], -1*m );
 
                     if( projectedPerc < minPerc[m] ) { minPerc[m] = projectedPerc; minPoint[m].set( projectedPos ); }
                     if( projectedPerc > maxPerc[m] ) { maxPerc[m] = projectedPerc; maxPoint[m].set( projectedPos ); }
                 }
             }
 
-            this.renderer.drawVector( minPoint[0], maxPoint[0], this.color[0] );
-            this.renderer.drawVector( minPoint[1], maxPoint[1], this.color[1] );
-
+            let drawAxis = true;
             if( minPerc[1] < maxPerc[0] && maxPerc[1] > minPerc[0] )
             {
                 collidingAxisCount++;
+
+                if( onlyShowAxesWithoutCollision )
+                {
+                    drawAxis = false;
+                }
+            }
+
+            if( drawAxis )
+            {
+                this.renderer.drawVector( axisStart, axisEnd, axisColor );
+
+                for( let m=0; m<2; m++ )
+                {
+                    for( let i=0; i<4; i++ )
+                    {
+                        let pos = this.mesh[m].getVertexPosition( i );
+                        pos = this.rotatePoint( pos, this.rot[m] );
+                        let relativePoint = this.pos[m].plus( vec2.getTemp( pos.x, pos.y ) ).minus( axisStart );
+
+                        let projectedPerc = axisDirection.dot( relativePoint );
+
+                        let projectedPos = axisStart.plus( axisDirection.times( projectedPerc ) );
+                        this.renderer.drawPoint( projectedPos, this.color[m], -1*m );
+                    }
+                }
+
+                this.renderer.drawVector( minPoint[0], maxPoint[0], this.color[0] );
+                this.renderer.drawVector( minPoint[1], maxPoint[1], this.color[1] );
             }
         }
 
-        if( this.showAllAxes === false )
+        if( drawAllAxes === false )
         {
             if( collidingAxisCount > 0 )
                 imgui.text( "Colliding on this axis" );
@@ -256,7 +289,7 @@ class GuideCollisionSAT extends Guide
         else
         {
             if( collidingAxisCount === 0 )
-                imgui.text( "Not Colliding" );
+                imgui.text( "Not Colliding on any axis" );
             else
                 imgui.text( "Colliding on " + collidingAxisCount + " axes" );
 
