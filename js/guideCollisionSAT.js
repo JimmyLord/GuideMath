@@ -17,7 +17,7 @@ class GuideCollisionSAT extends Guide
 {
     constructor(mainProject, framework)
     {
-        let numPages = 6;
+        let numPages = 2;
         super( mainProject, framework, numPages );
 
         this.mesh = new Array(2);
@@ -40,7 +40,7 @@ class GuideCollisionSAT extends Guide
         this.rot[1] = 0;
         this.color[1] = this.framework.resources.materials["blue"];
 
-        this.showAllAxes = false;
+        this.showAllAxes = true;
         this.currentAxis = 0;
 
         // Init imgui window positions and sizes.
@@ -109,6 +109,8 @@ class GuideCollisionSAT extends Guide
                 currentMesh = 1;
             }
             this.mesh[currentMesh].getVertexPositionsAtEdge( currentEdge, v1, v2 );
+            v1 = this.rotatePoint( v1, this.rot[currentMesh] );
+            v2 = this.rotatePoint( v2, this.rot[currentMesh] );
             let dir1 = v2.minus( v1 );
             dir1.normalize();
 
@@ -120,16 +122,19 @@ class GuideCollisionSAT extends Guide
                     continue;
                 
                 currentEdge = uniqueEdges[edge2];
+                currentMesh = 0;
                 if( currentEdge >= this.mesh[0].edgeList.length )
                 {
                     currentEdge = currentEdge - this.mesh[0].edgeList.length;
                     currentMesh = 1;
                 }
                 this.mesh[currentMesh].getVertexPositionsAtEdge( currentEdge, v1, v2 );
+                v1 = this.rotatePoint( v1, this.rot[currentMesh] );
+                v2 = this.rotatePoint( v2, this.rot[currentMesh] );
                 let dir2 = v2.minus( v1 );
                 dir2.normalize();
 
-                if( Math.abs( dir1.dot( dir2 ) ) === 1 )
+                if( Math.abs( dir1.dot( dir2 ) ) > 0.999999 )
                 {
                     found = true;
                     break;
@@ -138,7 +143,6 @@ class GuideCollisionSAT extends Guide
 
             if( found === false )
             {
-                debugger;
                 uniqueEdges.push( edge1 );
             }
         }
@@ -190,32 +194,9 @@ class GuideCollisionSAT extends Guide
             imgui.window( "Separating Axis Theorem" );
         }
 
-        if( this.page === 4 )
-        {
-            imgui.window( "Definitions" );
-            imgui.text( "More to come.");
-            imgui.text( "" );
-            imgui.window( "Separating Axis Theorem" );
-        }
-
-        if( this.page === 5 )
-        {
-            imgui.window( "Definitions" );
-            imgui.text( "More to come.");
-            imgui.text( "" );
-            imgui.window( "Separating Axis Theorem" );
-        }
-
-        if( this.page === 6 )
-        {
-            imgui.window( "Definitions" );
-            imgui.text( "More to come.");
-            imgui.text( "" );
-            imgui.window( "Separating Axis Theorem" );
-        }
-
         // Colors.
         let axisColor = this.framework.resources.materials["white"];
+        let axisCollidingColor = this.framework.resources.materials["red"];
 
         // Grid.
         if( this.mainProject.showGrid )
@@ -297,9 +278,11 @@ class GuideCollisionSAT extends Guide
             }
 
             let drawAxis = true;
+            let collidingOnAxis = false;
             if( minPerc[1] < maxPerc[0] && maxPerc[1] > minPerc[0] )
             {
                 collidingAxisCount++;
+                collidingOnAxis = true;
 
                 if( onlyShowAxesWithoutCollision )
                 {
@@ -309,7 +292,10 @@ class GuideCollisionSAT extends Guide
 
             if( drawAxis )
             {
-                this.renderer.drawVector( axisStart, axisEnd, axisColor );
+                if( collidingOnAxis )
+                    this.renderer.drawVector( axisStart, axisEnd, axisCollidingColor );
+                else
+                    this.renderer.drawVector( axisStart, axisEnd, axisColor );
 
                 for( let m=0; m<2; m++ )
                 {
@@ -343,7 +329,7 @@ class GuideCollisionSAT extends Guide
             else
                 imgui.text( "Colliding on " + collidingAxisCount + " axes" );
 
-            if( collidingAxisCount === 8 )
+            if( collidingAxisCount === uniqueEdges.length )
                 imgui.text( "Objects are overlapping" );
             else
                 imgui.text( "No overlap" );
