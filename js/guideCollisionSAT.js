@@ -90,8 +90,58 @@ class GuideCollisionSAT extends Guide
     {
         let decimals = 2;
 
+        let uniqueEdges = [];
+
         // Some precomputed values.
         let totalEdges = this.mesh[0].edgeList.length + this.mesh[1].edgeList.length;
+
+        // Find edge indices facing unique directions.
+        for( let edge1=0; edge1<totalEdges; edge1++ )
+        {
+            let v1 = vec3.getTemp();
+            let v2 = vec3.getTemp();
+                    
+            let currentEdge = edge1;
+            let currentMesh = 0;
+            if( currentEdge >= this.mesh[0].edgeList.length )
+            {
+                currentEdge = currentEdge - this.mesh[0].edgeList.length;
+                currentMesh = 1;
+            }
+            this.mesh[currentMesh].getVertexPositionsAtEdge( currentEdge, v1, v2 );
+            let dir1 = v2.minus( v1 );
+            dir1.normalize();
+
+            let found = false;
+
+            for( let edge2=0; edge2<uniqueEdges.length; edge2++ )
+            {
+                if( edge1 === edge2 )
+                    continue;
+                
+                currentEdge = uniqueEdges[edge2];
+                if( currentEdge >= this.mesh[0].edgeList.length )
+                {
+                    currentEdge = currentEdge - this.mesh[0].edgeList.length;
+                    currentMesh = 1;
+                }
+                this.mesh[currentMesh].getVertexPositionsAtEdge( currentEdge, v1, v2 );
+                let dir2 = v2.minus( v1 );
+                dir2.normalize();
+
+                if( Math.abs( dir1.dot( dir2 ) ) === 1 )
+                {
+                    found = true;
+                    break;
+                }
+            }
+
+            if( found === false )
+            {
+                debugger;
+                uniqueEdges.push( edge1 );
+            }
+        }
 
         // Menu.
         let imgui = this.framework.imgui;
@@ -115,7 +165,7 @@ class GuideCollisionSAT extends Guide
                 this.showAllAxes = !this.showAllAxes;
             if( this.showAllAxes === false )
             {
-                [this.currentAxis] = imgui.dragNumber( "Axis", this.currentAxis, 1, 0, 0, totalEdges-1 );
+                [this.currentAxis] = imgui.dragNumber( "Axis", this.currentAxis, 1, 0, 0, uniqueEdges.length-1 );
             }
 
             drawAllAxes = this.showAllAxes;
@@ -180,7 +230,7 @@ class GuideCollisionSAT extends Guide
         // Grab the edge from the mesh.
         // Extend and offset the edge away from the shape for visuals.
         let minAxis = 0;
-        let maxAxis = totalEdges - 1;
+        let maxAxis = uniqueEdges.length - 1;
         let collidingAxisCount = 0;
 
         if( drawAllAxes === false )
@@ -193,7 +243,7 @@ class GuideCollisionSAT extends Guide
         {
             let v1 = vec3.getTemp();
             let v2 = vec3.getTemp();
-            let currentAxis = currentAxisIndex;
+            let currentAxis = uniqueEdges[currentAxisIndex];
             let currentMesh = 0;
             if( currentAxis >= this.mesh[0].edgeList.length )
             {
