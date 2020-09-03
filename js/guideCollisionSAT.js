@@ -366,7 +366,12 @@ class GuideCollisionSAT extends Guide
 
         if( buttonID === 0 )
         {
-            this.meshSelected = 1;
+            let d0 = this.pos[0].minus( this.mousePosition ).length();
+            let d1 = this.pos[1].minus( this.mousePosition ).length();
+            if( d0 < d1 )
+                this.meshSelected = 0;
+            else
+                this.meshSelected = 1;
             this.meshSelectionOffset.set( this.pos[this.meshSelected].minus( this.mousePosition ) );
         }
     }
