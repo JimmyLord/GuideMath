@@ -27,6 +27,7 @@ class GuideCollisionSAT extends Guide
 
         this.meshSelected = -1;
         this.meshSelectionOffset = new vec2();
+        this.meshSelectionOffsetAngle = 0;
 
         this.mesh[0] = new Mesh( this.framework.gl );
         this.mesh[0].createBox( 0.5, 0.5, true );
@@ -352,7 +353,8 @@ class GuideCollisionSAT extends Guide
             else
             {
                 let offset = this.mousePosition.minus( this.pos[this.meshSelected] );
-                this.rot[this.meshSelected] = -Math.atan2( offset.y, offset.x ) / Math.PI * 180;
+                this.rot[this.meshSelected] += -Math.atan2( offset.y, offset.x ) / Math.PI * 180 - this.meshSelectionOffsetAngle;
+                this.meshSelectionOffsetAngle = -Math.atan2( offset.y, offset.x ) / Math.PI * 180;
             }
         }
     }
@@ -373,6 +375,7 @@ class GuideCollisionSAT extends Guide
             else
                 this.meshSelected = 1;
             this.meshSelectionOffset.set( this.pos[this.meshSelected].minus( this.mousePosition ) );
+            this.meshSelectionOffsetAngle = -Math.atan2( this.meshSelectionOffset.y, this.meshSelectionOffset.x ) / Math.PI * 180;
         }
     }
 
