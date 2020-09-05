@@ -221,6 +221,8 @@ class GuideCollisionSAT extends Guide
             maxAxis = this.currentAxis;
         }
 
+        let minimumTranslationAmount = 0;
+        let overlapAxis = -1;
         for( let currentAxisIndex = minAxis; currentAxisIndex <= maxAxis; currentAxisIndex++ )
         {
             let v1 = vec3.getTemp();
@@ -282,6 +284,33 @@ class GuideCollisionSAT extends Guide
             let collidingOnAxis = false;
             if( minPerc[1] < maxPerc[0] && maxPerc[1] > minPerc[0] )
             {
+                // Determine the minimum translation amount to eliminate the overlap.
+                {
+                    // TODO: Find a better way to handle this... if possible.
+                    let minRight = Math.min( maxPerc[0], maxPerc[1] );
+                    let maxLeft = Math.max( minPerc[0], minPerc[1] );
+                    let overlapAmount = minRight - maxLeft;
+                    // If object 1 is larger than 0 and straddles it.
+                    if( minPerc[1] < minPerc[0] && maxPerc[1] > maxPerc[0] )
+                    {
+                        let largerNonOverlappedPart = Math.min( minPerc[0] - minPerc[1], maxPerc[1] - maxPerc[0] );
+                        overlapAmount += largerNonOverlappedPart;
+                    }
+                    // If object 0 is larger than 1 and straddles it.
+                    if( minPerc[0] < minPerc[1] && maxPerc[0] > maxPerc[1] )
+                    {
+                        let largerNonOverlappedPart = Math.min( minPerc[1] - minPerc[0], maxPerc[0] - maxPerc[1] );
+                        overlapAmount += largerNonOverlappedPart;
+                    }
+
+                    // Store the largest overlap.
+                    if( overlapAmount > minimumTranslationAmount )
+                    {
+                        minimumTranslationAmount = overlapAmount;
+                        overlapAxis = currentAxisIndex;
+                    }
+                }
+
                 collidingAxisCount++;
                 collidingOnAxis = true;
 
@@ -336,8 +365,14 @@ class GuideCollisionSAT extends Guide
                 imgui.text( "No overlap" );
         }
 
-        //let isHovering0 = this.isPositionOverMesh( this.mousePosition, 0 );
-        //let isHovering1 = this.isPositionOverMesh( this.mousePosition, 1 );
+        if( overlapAxis !== -1 )
+        {
+            imgui.text( "MinTranslation: " + minimumTranslationAmount );
+            imgui.text( "overlapAxis: " + overlapAxis );
+        }
+
+        //let isHovering0 = this.isPositionInsideMesh( this.mousePosition, 0 );
+        //let isHovering1 = this.isPositionInsideMesh( this.mousePosition, 1 );
         //
         //imgui.text( "Mouse " + this.mousePosition.x.toFixed(2) + " " + this.mousePosition.y.toFixed(2) );
         //if( isHovering0 )
@@ -346,7 +381,7 @@ class GuideCollisionSAT extends Guide
         //    imgui.text( "Mouse is over mesh 1" );
     }
 
-    isPositionOverMesh(testPos, meshIndex)
+    isPositionInsideMesh(testPos, meshIndex)
     {
         // Currently only supports convex meshes.
         // Arbitrary shapes would need to be broken into convex parts or another approach would need to be taken.
@@ -413,9 +448,9 @@ class GuideCollisionSAT extends Guide
 
         if( buttonID === 0 )
         {
-            if( this.isPositionOverMesh( this.mousePosition, 1 ) )
+            if( this.isPositionInsideMesh( this.mousePosition, 1 ) )
                 this.meshSelected = 1;
-            else if( this.isPositionOverMesh( this.mousePosition, 0 ) )
+            else if( this.isPositionInsideMesh( this.mousePosition, 0 ) )
                 this.meshSelected = 0;
 
             //let d0 = this.pos[0].minus( this.mousePosition ).length();
