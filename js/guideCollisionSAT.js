@@ -335,6 +335,51 @@ class GuideCollisionSAT extends Guide
             else
                 imgui.text( "No overlap" );
         }
+
+        //let isHovering0 = this.isPositionOverMesh( this.mousePosition, 0 );
+        //let isHovering1 = this.isPositionOverMesh( this.mousePosition, 1 );
+        //
+        //imgui.text( "Mouse " + this.mousePosition.x.toFixed(2) + " " + this.mousePosition.y.toFixed(2) );
+        //if( isHovering0 )
+        //    imgui.text( "Mouse is over mesh 0" );
+        //if( isHovering1 )
+        //    imgui.text( "Mouse is over mesh 1" );
+    }
+
+    isPositionOverMesh(testPos, meshIndex)
+    {
+        // Currently only supports convex meshes.
+        // Arbitrary shapes would need to be broken into convex parts or another approach would need to be taken.
+
+        // Loop through edges.
+        for( let edgeIndex=0; edgeIndex<this.mesh[meshIndex].edgeList.length; edgeIndex++ )
+        {
+            // TODO: Transform the vertices in the mesh once rather than for each edge.
+            let v1 = vec3.getTemp();
+            let v2 = vec3.getTemp();
+            this.mesh[meshIndex].getVertexPositionsAtEdge( edgeIndex, v1, v2 );
+            v1 = this.rotatePoint( v1, this.rot[meshIndex] );
+            v2 = this.rotatePoint( v2, this.rot[meshIndex] );
+            v1.add( this.pos[meshIndex] );
+            v2.add( this.pos[meshIndex] );
+
+            // Determine the normal for the edge.
+            let edgeDir = v2.minus( v1 );
+            let edgeNormal = vec2.getTemp( -edgeDir.y, edgeDir.x );
+
+            // Determine the direction of the point we're testing from the edge.
+            let testDir = testPos.minus( v1 );
+
+            // Determine which side of the edge the point is on.
+            let sign = edgeNormal.dot( testDir );
+
+            // Check if the test point is on the far side of the edge from the shape.
+            if( sign > 0 )
+                return false;
+        }
+
+        // All edge tests say we're on the "inside" of the shape.
+        return true;
     }
 
     onMouseMove(x, y)
@@ -368,12 +413,17 @@ class GuideCollisionSAT extends Guide
 
         if( buttonID === 0 )
         {
-            let d0 = this.pos[0].minus( this.mousePosition ).length();
-            let d1 = this.pos[1].minus( this.mousePosition ).length();
-            if( d0 < d1 )
-                this.meshSelected = 0;
-            else
+            if( this.isPositionOverMesh( this.mousePosition, 1 ) )
                 this.meshSelected = 1;
+            else if( this.isPositionOverMesh( this.mousePosition, 0 ) )
+                this.meshSelected = 0;
+
+            //let d0 = this.pos[0].minus( this.mousePosition ).length();
+            //let d1 = this.pos[1].minus( this.mousePosition ).length();
+            //if( d0 < d1 )
+            //    this.meshSelected = 0;
+            //else
+            //    this.meshSelected = 1;
             this.meshSelectionOffset.set( this.pos[this.meshSelected].minus( this.mousePosition ) );
             this.meshSelectionOffsetAngle = -Math.atan2( this.meshSelectionOffset.y, this.meshSelectionOffset.x ) / Math.PI * 180;
         }
