@@ -29,35 +29,47 @@ class GuideCollisionSAT extends Guide
         this.meshSelectionOffset = new vec2();
         this.meshSelectionOffsetAngle = 0;
 
-        this.mesh[0] = new Mesh( this.framework.gl );
-        this.mesh[0].createBox( 0.5, 0.5, true );
+        // Temp value when switching meshes, to avoid issues with number of edges, etc.
+        this.meshNextFrame = null;
+
+        // Define some meshes for selection.
+        {
+            this.meshBox = new Mesh( this.framework.gl );
+            this.meshBox.createBox( 0.5, 0.5, true );
+
+            this.meshRectangle = new Mesh( this.framework.gl );
+            this.meshRectangle.createBox( 0.8, 0.3, true );
+
+            this.mesh5Sided = new Mesh( this.framework.gl );
+            this.mesh5Sided.startShape( this.framework.gl.TRIANGLE_FAN, 5, 9 );
+            this.mesh5Sided.addVertexF( -0.4,-0.1,0,  0,0,  0,0,-1,  255,255,255,255 );
+            this.mesh5Sided.addVertexF( -0.4, 0.1,0,  0,0,  0,0,-1,  255,255,255,255 );
+            this.mesh5Sided.addVertexF(  0.4, 0.1,0,  0,0,  0,0,-1,  255,255,255,255 );
+            this.mesh5Sided.addVertexF(  0.5,-0.2,0,  0,0,  0,0,-1,  255,255,255,255 );
+            this.mesh5Sided.addVertexF(  0.2,-0.3,0,  0,0,  0,0,-1,  255,255,255,255 );
+            this.mesh5Sided.addIndex( 0 );
+            this.mesh5Sided.addIndex( 1 );
+            this.mesh5Sided.addIndex( 2 );
+            this.mesh5Sided.addIndex( 0 );
+            this.mesh5Sided.addIndex( 2 );
+            this.mesh5Sided.addIndex( 3 );
+            this.mesh5Sided.addIndex( 0 );
+            this.mesh5Sided.addIndex( 3 );
+            this.mesh5Sided.addIndex( 4 );
+            this.mesh5Sided.addEdge( 0,1 );
+            this.mesh5Sided.addEdge( 1,2 );
+            this.mesh5Sided.addEdge( 2,3 );
+            this.mesh5Sided.addEdge( 3,4 );
+            this.mesh5Sided.addEdge( 4,0 );
+            this.mesh5Sided.endShape();
+        }
+
+        this.mesh[0] = this.meshBox;
         this.pos[0] = new vec2( 0, 0 );
         this.rot[0] = 0;
         this.color[0] = this.framework.resources.materials["green"];
 
-        this.mesh[1] = new Mesh( this.framework.gl );
-        //this.mesh[1].createBox( 0.8, 0.3, true );
-        this.mesh[1].startShape( this.framework.gl.TRIANGLE_FAN, 5, 9 );
-        this.mesh[1].addVertexF( -0.4,-0.1,0,  0,0,  0,0,-1,  255,255,255,255 );
-        this.mesh[1].addVertexF( -0.4, 0.1,0,  0,0,  0,0,-1,  255,255,255,255 );
-        this.mesh[1].addVertexF(  0.4, 0.1,0,  0,0,  0,0,-1,  255,255,255,255 );
-        this.mesh[1].addVertexF(  0.5,-0.2,0,  0,0,  0,0,-1,  255,255,255,255 );
-        this.mesh[1].addVertexF(  0.2,-0.3,0,  0,0,  0,0,-1,  255,255,255,255 );
-        this.mesh[1].addIndex( 0 );
-        this.mesh[1].addIndex( 1 );
-        this.mesh[1].addIndex( 2 );
-        this.mesh[1].addIndex( 0 );
-        this.mesh[1].addIndex( 2 );
-        this.mesh[1].addIndex( 3 );
-        this.mesh[1].addIndex( 0 );
-        this.mesh[1].addIndex( 3 );
-        this.mesh[1].addIndex( 4 );
-        this.mesh[1].addEdge( 0,1 );
-        this.mesh[1].addEdge( 1,2 );
-        this.mesh[1].addEdge( 2,3 );
-        this.mesh[1].addEdge( 3,4 );
-        this.mesh[1].addEdge( 4,0 );
-        this.mesh[1].endShape();
+        this.mesh[1] = this.mesh5Sided;
         this.pos[1] = new vec2( 0.8, 0.3 );
         this.rot[1] = 0;
         this.color[1] = this.framework.resources.materials["blue"];
@@ -96,6 +108,12 @@ class GuideCollisionSAT extends Guide
             }
 
             this.currentPosition = new vec2( Math.cos( currentRadians ), Math.sin( currentRadians ) );
+        }
+
+        if( this.meshNextFrame !== null )
+        {
+            this.mesh[1] = this.meshNextFrame;
+            this.meshNextFrame = null;
         }
     }
 
@@ -179,6 +197,7 @@ class GuideCollisionSAT extends Guide
         // Options.
         let onlyShowAxesWithoutCollision = false;
         let drawAllAxes = false;
+        let showMeshSelection = true;
 
         if( this.page === 1 )
         {
@@ -214,6 +233,22 @@ class GuideCollisionSAT extends Guide
             imgui.text( "More to come.");
             imgui.text( "" );
             imgui.window( "Separating Axis Theorem" );
+        }
+
+        if( showMeshSelection )
+        {
+            if( imgui.button( "Box v Box" ) )
+            {
+                this.meshNextFrame = this.meshBox;
+            }
+            if( imgui.button( "Box v Rect" ) )
+            {
+                this.meshNextFrame = this.meshRectangle;
+            }
+            if( imgui.button( "Box v 5 Sided Shape" ) )
+            {
+                this.meshNextFrame = this.mesh5Sided;
+            }
         }
 
         // Colors.
