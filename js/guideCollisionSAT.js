@@ -488,7 +488,7 @@ class GuideCollisionSAT extends Guide
             }
             else
             {
-                let offset = this.mousePosition.minus( this.pos[this.meshSelected] );
+                let offset = this.pos[this.meshSelected].minus( this.mousePosition );
                 this.rot[this.meshSelected] += -Math.atan2( offset.y, offset.x ) / Math.PI * 180 - this.meshSelectionOffsetAngle;
                 this.meshSelectionOffsetAngle = -Math.atan2( offset.y, offset.x ) / Math.PI * 180;
             }
