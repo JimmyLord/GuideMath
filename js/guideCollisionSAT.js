@@ -277,7 +277,7 @@ class GuideCollisionSAT extends Guide
             maxAxis = this.currentAxis;
         }
 
-        let minimumTranslationAmount = 0;
+        let minimumTranslationAmount = Number.MAX_VALUE;
         let overlapAxis = -1;
         for( let currentAxisIndex = minAxis; currentAxisIndex <= maxAxis; currentAxisIndex++ )
         {
@@ -359,8 +359,8 @@ class GuideCollisionSAT extends Guide
                         overlapAmount += largerNonOverlappedPart;
                     }
 
-                    // Store the largest overlap.
-                    if( overlapAmount > minimumTranslationAmount )
+                    // Store the smallest overlap.
+                    if( overlapAmount < minimumTranslationAmount )
                     {
                         minimumTranslationAmount = overlapAmount;
                         overlapAxis = currentAxisIndex;
@@ -421,9 +421,9 @@ class GuideCollisionSAT extends Guide
                 imgui.text( "No overlap" );
         }
 
-        if( overlapAxis !== -1 )
+        if( collidingAxisCount === uniqueEdges.length && overlapAxis !== -1 )
         {
-            imgui.text( "MinTranslation: " + minimumTranslationAmount );
+            imgui.text( "MinTranslation: " + minimumTranslationAmount.toFixed( 2 ) );
             imgui.text( "overlapAxis: " + overlapAxis );
         }
 
