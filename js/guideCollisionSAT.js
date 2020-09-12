@@ -254,6 +254,7 @@ class GuideCollisionSAT extends Guide
         // Colors.
         let axisColor = this.framework.resources.materials["white"];
         let axisCollidingColor = this.framework.resources.materials["red"];
+        let axisOverlapColor = this.framework.resources.materials["gray"];
 
         // Grid.
         if( this.mainProject.showGrid )
@@ -425,6 +426,29 @@ class GuideCollisionSAT extends Guide
         {
             imgui.text( "MinTranslation: " + minimumTranslationAmount.toFixed( 2 ) );
             imgui.text( "overlapAxis: " + overlapAxis );
+
+            // Display axis of separation.
+            let currentAxis = overlapAxis;
+            let currentMesh = 0;
+            let otherMesh = 1;
+            if( currentAxis >= this.mesh[0].edgeList.length )
+            {
+                currentAxis = currentAxis - this.mesh[0].edgeList.length;
+                currentMesh = 1;
+                otherMesh = 0;
+            }
+            let v1 = vec3.getTemp();
+            let v2 = vec3.getTemp();
+            this.mesh[currentMesh].getVertexPositionsAtEdge( currentAxis, v1, v2 );
+            v1 = this.rotatePoint( v1, this.rot[currentMesh] );
+            v2 = this.rotatePoint( v2, this.rot[currentMesh] );
+            let dir = v2.minus( v1 );
+            v1.set( this.pos[currentMesh] );
+            v2 = v1.plus( dir );
+            this.renderer.drawVector( v1, v2, axisOverlapColor );
+            v1.set( this.pos[otherMesh] );
+            v2 = v1.minus( dir );
+            this.renderer.drawVector( v1, v2, axisOverlapColor );
         }
 
         //let isHovering0 = this.isPositionInsideMesh( this.mousePosition, 0 );
