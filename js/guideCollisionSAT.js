@@ -76,6 +76,7 @@ class GuideCollisionSAT extends Guide
 
         this.showAllAxes = true;
         this.currentAxis = 0;
+        this.alwaysPushApart = false;
 
         // Init imgui window positions and sizes.
         this.initWindows( false );
@@ -198,6 +199,7 @@ class GuideCollisionSAT extends Guide
         let onlyShowAxesWithoutCollision = false;
         let drawAllAxes = false;
         let showMeshSelection = true;
+        let alwaysPushApart = false;
 
         if( this.page === 1 )
         {
@@ -223,8 +225,12 @@ class GuideCollisionSAT extends Guide
             imgui.text( "If there's an axis where the 2 projections don't overlap, then there is no collision.");
             imgui.window( "Separating Axis Theorem" );
 
+            if( imgui.checkbox( "Always Push Apart", this.alwaysPushApart ) )
+                this.alwaysPushApart = !this.alwaysPushApart;
+
             onlyShowAxesWithoutCollision = true;
             drawAllAxes = true;
+            alwaysPushApart = this.alwaysPushApart;
         }
 
         if( this.page === 3 )
@@ -449,6 +455,19 @@ class GuideCollisionSAT extends Guide
             v1.set( this.pos[otherMesh] );
             v2 = v1.minus( dir );
             this.renderer.drawVector( v1, v2, axisOverlapColor );
+
+            // If no mesh is selected, push them apart.
+            if( alwaysPushApart || this.meshSelected === -1 )
+            {
+                let meshToPush = currentMesh;
+                if( alwaysPushApart && this.meshSelected === currentMesh )
+                {
+                    meshToPush = otherMesh;
+                }
+
+                this.pos[meshToPush].subtract( dir.times( minimumTranslationAmount ) );
+                this.framework.refresh( true );
+            }
         }
 
         //let isHovering0 = this.isPositionInsideMesh( this.mousePosition, 0 );
