@@ -284,6 +284,7 @@ class GuideCollisionSAT extends Guide
             maxAxis = this.currentAxis;
         }
 
+        // Display the test axes, the projected vertices and the overlap.
         let minimumTranslationAmount = Number.MAX_VALUE;
         let overlapAxis = -1;
         for( let currentAxisIndex = minAxis; currentAxisIndex <= maxAxis; currentAxisIndex++ )
@@ -304,7 +305,11 @@ class GuideCollisionSAT extends Guide
             v1.add( this.pos[currentMesh] );
             v2.add( this.pos[currentMesh] );
 
+            // Get the axis perpendicular to the edge.
             let dir = v2.minus( v1 );
+            dir.setF32( -dir.y, dir.x );
+
+            // Push it out a bit before drawing.
             dir.normalize();
             v1.subtract( dir.times( 0.5 ) );
             dir.multiplyBy( 1.5 );
@@ -328,7 +333,7 @@ class GuideCollisionSAT extends Guide
             let maxPoint = [vec2.getTemp(), vec2.getTemp()];
             for( let m=0; m<2; m++ )
             {
-                for( let i=0; i<4; i++ )
+                for( let i=0; i<this.mesh[m].numVerts; i++ )
                 {
                     let pos = this.mesh[m].getVertexPosition( i );
                     pos = this.rotatePoint( pos, this.rot[m] );
@@ -392,7 +397,7 @@ class GuideCollisionSAT extends Guide
 
                 for( let m=0; m<2; m++ )
                 {
-                    for( let i=0; i<4; i++ )
+                    for( let i=0; i<this.mesh[m].numVerts; i++ )
                     {
                         let pos = this.mesh[m].getVertexPosition( i );
                         pos = this.rotatePoint( pos, this.rot[m] );
