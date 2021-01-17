@@ -1,6 +1,6 @@
 ﻿function CreateGuide_CollisionSAT(mainProject, framework)
 {
-    MasterGuideList["Collision"]["Separating Axis Theorem"].guide = new GuideCollisionSAT( mainProject, framework );
+    MasterGuideList["Collision"]["Convex v Convex"].guide = new GuideCollisionSAT( mainProject, framework );
 }
 
 function RegisterGuide_CollisionSAT()
@@ -8,9 +8,9 @@ function RegisterGuide_CollisionSAT()
     if( MasterGuideList["Collision"] === undefined )
         MasterGuideList["Collision"] = [];
 
-    MasterGuideList["Collision"]["Separating Axis Theorem"] = {};
-    MasterGuideList["Collision"]["Separating Axis Theorem"].createFunc = CreateGuide_CollisionSAT;
-    MasterGuideList["Collision"]["Separating Axis Theorem"].guide = null;
+    MasterGuideList["Collision"]["Convex v Convex"] = {};
+    MasterGuideList["Collision"]["Convex v Convex"].createFunc = CreateGuide_CollisionSAT;
+    MasterGuideList["Collision"]["Convex v Convex"].guide = null;
 }
 
 class GuideCollisionSAT extends Guide
@@ -84,7 +84,7 @@ class GuideCollisionSAT extends Guide
 
     initWindows(force)
     {
-        super.initWindows( "Separating Axis Theorem", force );
+        super.initWindows( "Convex v Convex", force );
     }
 
     free()
@@ -190,7 +190,7 @@ class GuideCollisionSAT extends Guide
 
         // Menu.
         let imgui = this.framework.imgui;
-        imgui.window( "Separating Axis Theorem" );
+        imgui.window( "Convex v Convex" );
 
         // Add page selector.
         let switchedPage = this.switchPage( this.renderer.addPageSelector( this.framework, this.page, this.numPages ) );
@@ -206,7 +206,7 @@ class GuideCollisionSAT extends Guide
             imgui.window( "Definitions" );
             imgui.text( "The separating axis theorem is used to detect if 2 convex shapes are overlapping.");
             imgui.text( "This is achieved by projecting the shapes onto multiple axes.");
-            imgui.window( "Separating Axis Theorem" );
+            imgui.window( "Convex v Convex" );
 
             if( imgui.checkbox( "Show All Axes", this.showAllAxes ) )
                 this.showAllAxes = !this.showAllAxes;
@@ -223,7 +223,7 @@ class GuideCollisionSAT extends Guide
             imgui.window( "Definitions" );
             imgui.text( "Every axis perpendicular to each edge in the two shapes must be tested.");
             imgui.text( "If there's an axis where the 2 projections don't overlap, then there is no collision.");
-            imgui.window( "Separating Axis Theorem" );
+            imgui.window( "Convex v Convex" );
 
             if( imgui.checkbox( "Always Push Apart", this.alwaysPushApart ) )
                 this.alwaysPushApart = !this.alwaysPushApart;
@@ -238,7 +238,7 @@ class GuideCollisionSAT extends Guide
             imgui.window( "Definitions" );
             imgui.text( "More to come.");
             imgui.text( "" );
-            imgui.window( "Separating Axis Theorem" );
+            imgui.window( "Convex v Convex" );
         }
 
         if( showMeshSelection )

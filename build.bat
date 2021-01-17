@@ -26,6 +26,7 @@ java -jar closure.jar ^
 --js js\guideNormalization.js ^
 --js js\guideAcceleration.js ^
 --js js\guideAngularVelocity.js ^
+--js js\guideCollisionAABBLineSegment.js ^
 --js js\guideCollisionSAT.js ^
 --js js\main.js ^
 --js_output_file build\guides.js

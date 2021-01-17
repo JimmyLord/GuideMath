@@ -90,6 +90,11 @@ class GuideAcceleration extends Guide
     initWindows(force)
     {
         super.initWindows( "Acceleration", force );
+
+        let imgui = this.framework.imgui;
+        let w = this.framework.canvas.width / this.framework.imgui.scale;
+        let h = this.framework.canvas.height / this.framework.imgui.scale;
+        imgui.initWindow( "Code Sample", !force, new vec2(2,imgui.mainMenuBarHeight + 1 + 40 + 1 + 130 + 1), new vec2(235,100) );
     }
 
     free()
