@@ -42,7 +42,7 @@ class GuideCrossProduct extends Guide
 
     initWindows(force)
     {
-        super.initWindows( "Dot Product", force );
+        super.initWindows( "Cross Product", force );
     }
 
     free()
@@ -69,18 +69,8 @@ class GuideCrossProduct extends Guide
         let imgui = this.framework.imgui;
         imgui.window( "Cross Product" );
 
-        //if( this.vertexOrigin.distanceFrom( this.vertex1 ) == 0 )
-        //{
-        //    imgui.text( "Click and drag to create a vector" );
-        //}
-
         // Add page selector.
         let switchedPage = this.switchPage( this.renderer.addPageSelector( this.framework, this.page, this.numPages ) );
-
-        //if( imgui.checkbox( "Show positions", this.showPositions ) )
-        //{
-        //    this.showPositions = !this.showPositions;
-        //}
 
         let showAbsoluteCoords = false;
         let showRelativeCoords = false;
