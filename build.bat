@@ -23,6 +23,7 @@ java -jar closure.jar ^
 --js js\renderHelpers.js ^
 --js js\guide.js ^
 --js js\guideDotProduct.js ^
+--js js\guideCrossProduct.js ^
 --js js\guideNormalization.js ^
 --js js\guideAcceleration.js ^
 --js js\guideAngularVelocity.js ^
