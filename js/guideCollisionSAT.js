@@ -225,8 +225,8 @@ class GuideCollisionSAT extends Guide
             imgui.text( "If there's an axis where the 2 projections don't overlap, then there is no collision.");
             imgui.window( "Convex v Convex" );
 
-            if( imgui.checkbox( "Always Push Apart", this.alwaysPushApart ) )
-                this.alwaysPushApart = !this.alwaysPushApart;
+            //if( imgui.checkbox( "Always Push Apart", this.alwaysPushApart ) )
+            //    this.alwaysPushApart = !this.alwaysPushApart;
 
             onlyShowAxesWithoutCollision = true;
             drawAllAxes = true;
@@ -464,14 +464,14 @@ class GuideCollisionSAT extends Guide
             // If no mesh is selected, push them apart.
             if( alwaysPushApart || this.meshSelected === -1 )
             {
-                let meshToPush = currentMesh;
-                if( alwaysPushApart && this.meshSelected === currentMesh )
-                {
-                    meshToPush = otherMesh;
-                }
+                // let meshToPush = currentMesh;
+                // if( alwaysPushApart && this.meshSelected === currentMesh )
+                // {
+                //     meshToPush = otherMesh;
+                // }
 
-                this.pos[meshToPush].subtract( dir.times( minimumTranslationAmount ) );
-                this.framework.refresh( true );
+                // this.pos[meshToPush].subtract( dir.times( minimumTranslationAmount ) );
+                // this.framework.refresh( true );
             }
         }
 
