@@ -17,7 +17,7 @@ class GuideDotProduct extends Guide
 {
     constructor(mainProject, framework)
     {
-        let numPages = 4;
+        let numPages = 6;
         super( mainProject, framework, numPages );
 
         this.vertexOrigin = new vec2( 0, 0 );
@@ -91,14 +91,16 @@ class GuideDotProduct extends Guide
         //    this.showPositions = !this.showPositions;
         //}
 
-        let showProjection = false;
         let showAngle = false;
+        let showTwoNormalizedVectors = false;
+        let showProjection = false;
+        let showProjectedPosition = false;
 
         if( this.page === 1 )
         {
             imgui.window( "Definitions" );
-            imgui.text( "The dot product of 2 vectors describes the relationship between those 2 vectors");
-            imgui.text( "as follows: dotProduct = ||A|| * ||B|| * cos(θ)");
+            imgui.text( "The dot product of 2 vectors describes the relationship between them as follows:");
+            imgui.text( "   dotProduct = ||A|| * ||B|| * cos(θ)            ||A|| = Length of A");
             imgui.window( "Dot Product" );
 
             showAngle = true;
@@ -117,14 +119,25 @@ class GuideDotProduct extends Guide
         if( this.page === 3 )
         {
             imgui.window( "Definitions" );
-            imgui.text( "The dot product can be calculated easily:");
-            imgui.text( "dotProduct = v1.x*v2.x + v1.y*v2.y");
+            imgui.text( "An fast way to calculate the dot product is:");
+            imgui.text( "   dotProduct = v1.x*v2.x + v1.y*v2.y");
             imgui.window( "Dot Product" );
 
             showAngle = true;
         }
 
         if( this.page === 4 )
+        {
+            imgui.window( "Definitions" );
+            //imgui.text( "Another property of the dot product is the following:");
+            imgui.text( "If the 2 vectors are normalized (i.e. unit vectors),");
+            imgui.text( "   then the dot product will be the cosine of the angle between them.");
+            imgui.window( "Dot Product" );
+
+            showTwoNormalizedVectors = true;
+        }
+
+        if( this.page === 5 )
         {
             imgui.window( "Definitions" );
             //imgui.text( "Another property of the dot product is the following:");
@@ -135,16 +148,51 @@ class GuideDotProduct extends Guide
             showProjection = true;
         }
 
+        if( this.page === 6 )
+        {
+            imgui.window( "Definitions" );
+            //imgui.text( "Another property of the dot product is the following:");
+            imgui.text( "With this info, we can calculate the position of that point on the line.");
+            imgui.text( "   projected point = start position + (line dir * dot product)");
+            imgui.window( "Dot Product" );
+
+            showProjection = true;
+            showProjectedPosition = true;
+        }
+
         if( showAngle )
         {
-            imgui.text( "A:   " + this.vertex1.x.toFixed(decimals) + ", " + this.vertex1.y.toFixed(decimals) );
-            imgui.text( "B:   " + this.vertex2.x.toFixed(decimals) + ", " + this.vertex2.y.toFixed(decimals) );
-            imgui.text( "Magnitude of A: " + len1.toFixed(decimals) );
-            imgui.text( "Magnitude of B: " + len2.toFixed(decimals) );
+            imgui.text( "A:     (" + this.vertex1.x.toFixed(decimals) + ", " + this.vertex1.y.toFixed(decimals) + ")" );
+            imgui.text( "B:     (" + this.vertex2.x.toFixed(decimals) + ", " + this.vertex2.y.toFixed(decimals) + ")" );
+            imgui.text( "||A||:  " + len1.toFixed(decimals) );
+            imgui.text( "||B||:  " + len2.toFixed(decimals) );
             imgui.text( "dot:    " + dotProduct.toFixed(decimals) );
             imgui.text( "cos(θ): " + cosTheta.toFixed(decimals) );
             imgui.text( "θ:      " + thetaRadians.toFixed(decimals) + " radians" );
             imgui.text( "θ:      " + thetaDegrees.toFixed(decimals) + " degrees" );
+        }
+
+        if( showTwoNormalizedVectors )
+        {
+            this.vertex1.normalize();
+            this.vertex2.normalize();
+            let dotProduct = this.vertex1.dot( this.vertex2 );
+            let len1 = this.vertex1.length();
+            let len2 = this.vertex2.length();
+            let cosTheta = dotProduct / (len1 * len2);
+            let thetaRadians = Math.acos( cosTheta );
+            let thetaDegrees = Math.acos( cosTheta ) / Math.PI * 180;
+    
+            imgui.text( "A:     (" + this.vertex1.x.toFixed(decimals) + ", " + this.vertex1.y.toFixed(decimals) + ")" );
+            imgui.text( "B:     (" + this.vertex2.x.toFixed(decimals) + ", " + this.vertex2.y.toFixed(decimals) + ")" );
+            imgui.text( "||A||:  " + len1.toFixed(decimals) + " <- unit vector" );
+            imgui.text( "||B||:  " + len2.toFixed(decimals) + " <- unit vector" );
+            imgui.text( "dot:    " + dotProduct.toFixed(decimals) );
+            imgui.text( "cos(θ): " + cosTheta.toFixed(decimals) );
+            imgui.text( "θ:      " + thetaRadians.toFixed(decimals) + " radians" );
+            imgui.text( "θ:      " + thetaDegrees.toFixed(decimals) + " degrees" );
+
+            showAngle = true;
         }
 
         if( showProjection )
@@ -191,6 +239,18 @@ class GuideDotProduct extends Guide
 
             // Projected vector.
             this.renderer.drawVector( this.vertexOrigin, projectedPoint, colorProjectedVector );
+
+            // Text.
+            imgui.window( "FullFrame" );
+
+            if( showProjectedPosition )
+            {
+                this.renderer.drawString( "(" + (projectedPoint.x).toFixed(2) + "," + (projectedPoint.y).toFixed(2) + ")", projectedPoint.x, projectedPoint.y, align.x.left, align.y.top );
+            }
+            else
+            {
+                this.renderer.drawString( "" + (dotProduct).toFixed(2), projectedPoint.x, projectedPoint.y, align.x.left, align.y.top );
+            }
         }
 
         // Vertices.
@@ -216,6 +276,10 @@ class GuideDotProduct extends Guide
             }
             this.meshAngle.endShape();
             this.renderer.drawMesh( this.meshAngle, new vec3( 0, 0, 0 ), 0, this.framework.resources.materials["green"] );
+
+            // Text.
+            imgui.window( "FullFrame" );
+            this.renderer.drawString( "" + thetaDegrees.toFixed(decimals), this.vertexOrigin.x, this.vertexOrigin.y, align.x.left, align.y.top );
         }
 
         // Hypotenuse normalized.
@@ -255,7 +319,8 @@ class GuideDotProduct extends Guide
             }
             else if( this.vertexOrigin.distanceFrom( new vec2( worldPos.x, worldPos.y ) ) < 0.15 )
             {
-                this.vertexMoving = this.vertexOrigin;
+                // Don't allow origin to move.
+                //this.vertexMoving = this.vertexOrigin;
             }
 
             if( this.vertexMoving != null )
